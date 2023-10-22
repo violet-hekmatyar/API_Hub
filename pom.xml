@@ -9,6 +9,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>user-service</module>
+        <module>common</module>
     </modules>
     <version>1.0.0</version>
 
