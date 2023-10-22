@@ -1,8 +1,10 @@
 server:
   port: 8081
+  servlet:
+    context-path: /api
 spring:
   application:
-    name: hm-service
+    name: user-service
   profiles:
     active: dev
   datasource:
