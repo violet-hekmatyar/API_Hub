@@ -1,0 +1,42 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: hm-service
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://116.204.109.230:3306/apihub
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: Jimmy@2333
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
+  global-config:
+    db-config:
+      update-strategy: not_null
+      id-type: auto
+      logic-delete-field: isDelete # 全局逻辑删除的实体字段名(since 3.3.0,配置后可以忽略不配置步骤2)
+      logic-delete-value: 1 # 逻辑已删除值(默认为 1)
+      logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
+logging:
+  level:
+    com.apihub.user: debug
+  pattern:
+    dateformat: HH:mm:ss:SSS
+  file:
+    path: "logs/${spring.application.name}"
+knife4j:
+  enable: true
+  openapi:
+    title: user-service
+    description: "用户服务接口文档"
+    version: v1.0.0
+    group:
+      default:
+        group-name: default
+        api-rule: package
+        api-rule-resources:
+          - com.apihub.user.controller
