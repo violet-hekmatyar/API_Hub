@@ -28,8 +28,8 @@ public class JwtTool {
     public String createToken(Long userId, Duration ttl) {
         // 1.生成jws
         return JWT.create()
-                .setPayload("user", userId)
-                .setExpiresAt(new Date(System.currentTimeMillis() + ttl.toMillis()))
+                .setPayload("userId", userId)
+                .setExpiresAt(new Date(System.currentTimeMillis() + 36000 * 1000))
                 .setSigner(jwtSigner)
                 .sign();
     }
@@ -64,7 +64,7 @@ public class JwtTool {
             throw new BusinessException(NOT_LOGIN_ERROR,"token已经过期");
         }
         // 4.数据格式校验
-        Object userPayload = jwt.getPayload("user");
+        Object userPayload = jwt.getPayload("userId");
         if (userPayload == null) {
             // 数据为空
             throw new BusinessException(NOT_LOGIN_ERROR,"无效的token");

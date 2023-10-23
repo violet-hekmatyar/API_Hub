@@ -18,5 +18,5 @@ public interface UserService extends IService<User> {
 
     UserVO login(LoginFormDTO loginFormDTO);
 
-    User getLoginUser(HttpServletRequest request);
+    UserVO getLoginUser(HttpServletRequest request);
 }
