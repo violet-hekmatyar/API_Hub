@@ -4,16 +4,24 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
+import com.apihub.common.utils.UserContext;
+import com.apihub.user.config.JwtProperties;
 import com.apihub.user.mapper.UserMapper;
+import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
+import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
+import com.apihub.user.utils.JwtTool;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
 * @author IKUN
@@ -21,6 +29,8 @@ import javax.annotation.Resource;
 * @createDate 2023-10-22 23:40:52
 */
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 implements UserService{
 
@@ -69,5 +79,59 @@ implements UserService{
             }
             return user.getId();
         }
+    }
+
+    private final JwtTool jwtTool;
+
+    private final JwtProperties jwtProperties;
+
+    @Override
+    public UserVO login(LoginFormDTO loginFormDTO) {
+        // 1.数据校验
+        String userAccount = loginFormDTO.getUserAccount();
+        String userPassword = loginFormDTO.getUserPassword();
+        //可以添加密码要求
+
+        // 加密
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+
+        // 2. 查询用户是否存在
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("userPassword", encryptPassword);
+        User user = userMapper.selectOne(queryWrapper);
+        // 用户不存在
+        if (user == null) {
+            log.info("user login failed, userAccount cannot match userPassword");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+        }
+
+
+        // 5.生成TOKEN
+        String token = jwtTool.createToken(user.getId(), jwtProperties.getTokenTTL());
+        // 6.封装VO返回
+        UserVO vo = new UserVO();
+
+        vo.setId(user.getId());
+        vo.setUserAccount(user.getUserAccount());
+        vo.setUserName(user.getUserName());
+        vo.setUserRole(user.getUserRole());
+        vo.setCreateTime(user.getCreateTime());
+        vo.setGender(user.getGender());
+        vo.setToken(token);
+        return vo;
+    }
+
+    @Override
+    public User getLoginUser(HttpServletRequest request) {
+        Long userId = UserContext.getUser();
+        if (userId == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        User currentUser = this.getById(userId);
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        return currentUser;
     }
 }
