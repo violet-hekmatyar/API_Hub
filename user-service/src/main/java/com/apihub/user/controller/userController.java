@@ -5,22 +5,28 @@ import com.apihub.common.common.BaseResponse;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.common.ResultUtils;
 import com.apihub.common.exception.BusinessException;
+import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.dto.UserRegisterRequest;
+import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import static com.apihub.common.common.ErrorCode.NOT_LOGIN_ERROR;
 
 @RestController
+@Slf4j
 @RequestMapping("/user")
 public class userController {
     @Resource
     private UserService userService;
 
+    @ApiOperation("用户注册接口")
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
@@ -34,5 +40,30 @@ public class userController {
         }
         long result = userService.userRegister(userAccount, userPassword, checkPassword);
         return ResultUtils.success(result);
+    }
+
+    @ApiOperation("用户登录接口")
+    @PostMapping("login")
+    public UserVO login(@RequestBody LoginFormDTO loginFormDTO){
+        if (loginFormDTO == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String userAccount = loginFormDTO.getUserAccount();
+        String userPassword = loginFormDTO.getUserPassword();
+        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return userService.login(loginFormDTO);
+    }
+
+    @ApiOperation("获取当前用户接口")
+    @GetMapping("/get/login")
+    public BaseResponse<UserVO> getLoginUser(HttpServletRequest request) {
+        UserVO user ;
+        user = userService.getLoginUser(request);
+        if (user==null){
+            return new BaseResponse<>(NOT_LOGIN_ERROR);
+        }
+        return ResultUtils.success(user);
     }
 }

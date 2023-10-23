@@ -1,14 +1,29 @@
 server:
-  port: 8081
+  port: 8101
+  servlet:
+    context-path: /api
 spring:
   application:
-    name: hm-service
+    name: user-service
   profiles:
     active: dev
   datasource:
     url: jdbc:mysql://116.204.109.230:3306/apihub
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
+    password: Jimmy@2333
+  # Redis 配置
+  redis:
+    database: 6
+    host: 116.204.109.230
+    port: 6379
+    timeout: 5000
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 10
+        min-idle: 1
+        time-between-eviction-runs: 10s
     password: Jimmy@2333
 mybatis-plus:
   configuration:
@@ -40,3 +55,13 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.apihub.user.controller
+
+apihub:
+  jwt:
+    location: classpath:hmall.jks
+    alias: hmall
+    password: hmall123
+    tokenTTL: 30m
+  auth:
+    excludePaths:
+      - /api/user/login

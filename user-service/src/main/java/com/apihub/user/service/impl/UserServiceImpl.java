@@ -1,19 +1,35 @@
 package com.apihub.user.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
+import com.apihub.user.config.JwtProperties;
 import com.apihub.user.mapper.UserMapper;
+import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
+import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
+import com.apihub.user.utils.JwtTool;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static com.apihub.common.utils.RedisConstants.LOGIN_USER_KEY;
+import static com.apihub.common.utils.RedisConstants.LOGIN_USER_TTL;
 
 /**
 * @author IKUN
@@ -21,12 +37,17 @@ import javax.annotation.Resource;
 * @createDate 2023-10-22 23:40:52
 */
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 implements UserService{
 
     private static final String SALT = "hekmatyar";
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -69,5 +90,78 @@ implements UserService{
             }
             return user.getId();
         }
+    }
+
+    private final JwtTool jwtTool;
+
+    private final JwtProperties jwtProperties;
+
+    @Override
+    public UserVO login(LoginFormDTO loginFormDTO) {
+        // 1.数据校验
+        String userAccount = loginFormDTO.getUserAccount();
+        String userPassword = loginFormDTO.getUserPassword();
+        //可以添加密码要求
+
+        // 加密
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+
+        // 2. 查询用户是否存在
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("userPassword", encryptPassword);
+        User user = userMapper.selectOne(queryWrapper);
+        // 用户不存在
+        if (user == null) {
+            log.info("user login failed, userAccount cannot match userPassword");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+        }
+
+        // 5.生成TOKEN
+        String token = jwtTool.createToken(user.getId(), jwtProperties.getTokenTTL());
+
+        // 6.封装VO
+        UserVO userVo;
+        userVo = BeanUtil.copyProperties(user, UserVO.class);
+        userVo.setToken(token);
+
+        // 7.保存用户信息到 redis中
+        Map<String, Object> userMap = BeanUtil.beanToMap(userVo, new HashMap<>(),
+                CopyOptions.create()
+                        .setIgnoreNullValue(true)
+                        .setFieldValueEditor((fieldName, fieldValue) -> fieldValue != null ? fieldValue.toString() : ""));
+
+        String tokenKey = LOGIN_USER_KEY + user.getId();
+        stringRedisTemplate.opsForHash().putAll(tokenKey,userMap);
+        // 7.4.设置token有效期
+        stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
+
+        // 8.返回token+user信息
+
+        return userVo;
+    }
+
+    @Override
+    public UserVO getLoginUser(HttpServletRequest request) {
+        String token = request.getHeader("authorization");
+        if (StringUtils.isBlank(token)){
+            return null;
+        }
+        Long userId;
+        try{
+            userId = jwtTool.parseToken(token);
+        }catch (BusinessException e){
+            log.info("令牌解析失败!");
+            return null;
+        }
+        String tokenKey = LOGIN_USER_KEY + userId;
+        Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
+        if (userMap.isEmpty()) {
+            return null;
+        }
+        //刷新redis存储时间
+        stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
+
+        return BeanUtil.fillBeanWithMap(userMap,new UserVO(),false);
     }
 }

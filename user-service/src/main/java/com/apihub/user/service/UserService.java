@@ -1,7 +1,11 @@
 package com.apihub.user.service;
 
+import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
+import com.apihub.user.model.vo.UserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
 * @author IKUN
@@ -11,4 +15,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface UserService extends IService<User> {
 
     long userRegister(String userAccount, String userPassword, String checkPassword);
+
+    UserVO login(LoginFormDTO loginFormDTO);
+
+    UserVO getLoginUser(HttpServletRequest request);
 }

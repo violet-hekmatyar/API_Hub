@@ -1,0 +1,3 @@
+#org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+#  com.apihub.common.config.MyBatisConfig,\
+#  com.apihub.common.config.JsonConfig
