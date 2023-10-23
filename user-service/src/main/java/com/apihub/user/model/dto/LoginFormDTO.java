@@ -12,7 +12,4 @@ public class LoginFormDTO {
 
     @ApiModelProperty(value = "密码", required = true)
     private String userPassword;
-
-    @ApiModelProperty(value = "是否记住我", required = false)
-    private Boolean rememberMe = false;
 }

@@ -1,8 +1,9 @@
-package com.apihub.common.exception;
+package com.apihub.user.utils;
 
 import com.apihub.common.common.BaseResponse;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.common.ResultUtils;
+import com.apihub.common.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    //ToDo 全局设置而非每个包设置
 
     @ExceptionHandler(BusinessException.class)
     public BaseResponse<?> businessExceptionHandler(BusinessException e) {

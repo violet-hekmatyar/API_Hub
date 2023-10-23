@@ -30,6 +30,8 @@ import java.util.concurrent.TimeUnit;
 
 import static com.apihub.common.utils.RedisConstants.LOGIN_USER_KEY;
 import static com.apihub.common.utils.RedisConstants.LOGIN_USER_TTL;
+import static com.apihub.user.utils.UserConstant.BAN_ROLE;
+import static com.apihub.user.utils.UserConstant.MD5_SALT;
 
 /**
 * @author IKUN
@@ -42,7 +44,6 @@ import static com.apihub.common.utils.RedisConstants.LOGIN_USER_TTL;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 implements UserService{
 
-    private static final String SALT = "hekmatyar";
     @Resource
     private UserMapper userMapper;
 
@@ -74,10 +75,10 @@ implements UserService{
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复");
             }
             // 2. 加密
-            String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+            String encryptPassword = DigestUtils.md5DigestAsHex((MD5_SALT + userPassword).getBytes());
             // 3. 分配 accessKey, secretKey
-            String accessKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomNumbers(5));
-            String secretKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomNumbers(8));
+            String accessKey = DigestUtil.md5Hex(MD5_SALT + userAccount + RandomUtil.randomNumbers(5));
+            String secretKey = DigestUtil.md5Hex(MD5_SALT + userAccount + RandomUtil.randomNumbers(8));
             // 4. 插入数据
             User user = new User();
             user.setUserAccount(userAccount);
@@ -104,7 +105,7 @@ implements UserService{
         //可以添加密码要求
 
         // 加密
-        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        String encryptPassword = DigestUtils.md5DigestAsHex((MD5_SALT + userPassword).getBytes());
 
         // 2. 查询用户是否存在
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -115,6 +116,10 @@ implements UserService{
         if (user == null) {
             log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+        }
+
+        if (user.getUserRole().equals(BAN_ROLE)){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
         }
 
         // 5.生成TOKEN
@@ -145,19 +150,22 @@ implements UserService{
     public UserVO getLoginUser(HttpServletRequest request) {
         String token = request.getHeader("authorization");
         if (StringUtils.isBlank(token)){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "token为空");
         }
         Long userId;
         try{
             userId = jwtTool.parseToken(token);
         }catch (BusinessException e){
             log.info("令牌解析失败!");
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "令牌错误");
         }
         String tokenKey = LOGIN_USER_KEY + userId;
         Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
         if (userMap.isEmpty()) {
-            return null;
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
+        }
+        if (userMap.get("userRole").equals(BAN_ROLE)){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
         }
         //刷新redis存储时间
         stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
