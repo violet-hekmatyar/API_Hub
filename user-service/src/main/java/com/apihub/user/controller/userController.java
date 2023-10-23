@@ -177,7 +177,7 @@ public class userController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         UserVO currentUser = userService.getLoginUser(request);
-        //只允许改自己的
+        // 只允许改自己的
         if (!currentUser.getId().equals(UserUpdateVoRequest.getId())) {
             throw new BusinessException(NO_AUTH_ERROR);
         }
