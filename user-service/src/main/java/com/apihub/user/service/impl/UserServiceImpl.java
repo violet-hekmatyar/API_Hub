@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.apihub.common.utils.RedisConstants.LOGIN_USER_KEY;
 import static com.apihub.common.utils.RedisConstants.LOGIN_USER_TTL;
+import static com.apihub.user.utils.UserConstant.BAN_ROLE;
 import static com.apihub.user.utils.UserConstant.MD5_SALT;
 
 /**
@@ -117,6 +118,10 @@ implements UserService{
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
 
+        if (user.getUserRole().equals(BAN_ROLE)){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
+        }
+
         // 5.生成TOKEN
         String token = jwtTool.createToken(user.getId(), jwtProperties.getTokenTTL());
 
@@ -158,6 +163,9 @@ implements UserService{
         Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
         if (userMap.isEmpty()) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
+        }
+        if (userMap.get("userRole").equals(BAN_ROLE)){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
         }
         //刷新redis存储时间
         stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
