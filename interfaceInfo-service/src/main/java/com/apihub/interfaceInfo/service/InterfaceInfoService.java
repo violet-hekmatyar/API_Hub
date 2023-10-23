@@ -1,0 +1,13 @@
+package com.apihub.interfaceInfo.service;
+
+import com.apihub.interfaceInfo.domain.InterfaceInfo;
+import com.baomidou.mybatisplus.extension.service.IService;
+
+/**
+* @author IKUN
+* @description 针对表【interface_info(接口信息)】的数据库操作Service
+* @createDate 2023-10-24 00:38:35
+*/
+public interface InterfaceInfoService extends IService<InterfaceInfo> {
+
+}
