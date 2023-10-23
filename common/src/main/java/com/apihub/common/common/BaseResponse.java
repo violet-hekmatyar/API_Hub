@@ -33,4 +33,8 @@ public class BaseResponse<T> implements Serializable {
     public BaseResponse(ErrorCode errorCode) {
         this(errorCode.getCode(), null, errorCode.getMessage());
     }
+
+    public static BaseResponse<Object> ReturnErrorResponse(ErrorCode errorCode){
+        return new BaseResponse<>(errorCode.getCode(), null, errorCode.getMessage());
+    }
 }

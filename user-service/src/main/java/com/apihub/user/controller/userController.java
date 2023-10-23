@@ -11,6 +11,7 @@ import com.apihub.user.model.entity.User;
 import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import static com.apihub.common.common.ErrorCode.NOT_LOGIN_ERROR;
+
 @RestController
+@Slf4j
 @RequestMapping("/user")
 public class userController {
     @Resource
@@ -57,7 +61,14 @@ public class userController {
     @ApiOperation("获取当前用户接口")
     @GetMapping("/get/login")
     public BaseResponse<UserVO> getLoginUser(HttpServletRequest request) {
-        User user = userService.getLoginUser(request);
+        User user = new User();
+        try{
+             user = userService.getLoginUser(request);
+        }catch (BusinessException e){
+            log.info("令牌解析失败!");
+            return new BaseResponse<>(NOT_LOGIN_ERROR);
+        }
+
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
         return ResultUtils.success(userVO);

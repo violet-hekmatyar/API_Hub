@@ -125,8 +125,19 @@ implements UserService{
     @Override
     public User getLoginUser(HttpServletRequest request) {
         Long userId = UserContext.getUser();
+        String token = request.getHeader("authorization");
         if (userId == null){
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+            if (StringUtils.isBlank(token)){
+                throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+            }
+            try{
+                userId = jwtTool.parseToken(token);
+                // 3.存入上下文
+                UserContext.setUser(userId);
+            }catch (BusinessException e){
+                log.info("令牌解析失败!");
+                throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+            }
         }
         User currentUser = this.getById(userId);
         if (currentUser == null) {

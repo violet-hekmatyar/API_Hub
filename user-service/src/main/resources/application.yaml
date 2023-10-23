@@ -51,7 +51,4 @@ apihub:
     tokenTTL: 30m
   auth:
     excludePaths:
-      - /search/**
-      - /users/login
-      - /items/**
-      - /hi
+      - /api/user/login
