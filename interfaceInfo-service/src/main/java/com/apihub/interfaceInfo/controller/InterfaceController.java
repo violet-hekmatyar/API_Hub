@@ -20,7 +20,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping("/post")
+@RequestMapping("/interfaceInfo")
 @Slf4j
 public class InterfaceController {
 

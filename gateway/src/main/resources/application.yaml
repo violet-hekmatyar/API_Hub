@@ -1,0 +1,32 @@
+server:
+  port: 8100
+  servlet:
+    context-path: /api
+spring:
+  application:
+    name: user-service
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      server-addr: 127.0.0.1:8848
+#      server-addr: 116.204.109.230:8848 # nacos地址
+#      username: nacos
+#      password: Jimmy@2333
+    gateway:
+      routes:
+        - id: user-service # 路由规则id，自定义，唯一
+          uri: lb://user-service # 路由的目标服务，lb代表负载均衡，会从注册中心拉取服务列表
+          predicates: # 路由断言，判断当前请求是否符合当前规则，符合则路由到目标服务
+            - Path=/api/user/**,/api/userRPC/** # 这里是以请求路径作为判断规则
+        - id: interfaceInfo-service # 路由规则id，自定义，唯一
+          uri: lb://interfaceInfo-service # 路由的目标服务，lb代表负载均衡，会从注册中心拉取服务列表
+          predicates: # 路由断言，判断当前请求是否符合当前规则，符合则路由到目标服务
+            - Path=/api/interfaceInfo/** # 这里是以请求路径作为判断规则
+
+#apihub:
+#  jwt:
+#    location: classpath:hmall.jks
+#    alias: hmall
+#    password: hmall123
+#    tokenTTL: 30m

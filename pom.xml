@@ -11,6 +11,7 @@
         <module>user-service</module>
         <module>common</module>
         <module>interfaceInfo-service</module>
+        <module>gateway</module>
     </modules>
     <version>1.0.0</version>
 
