@@ -147,14 +147,21 @@ implements UserService{
     }
 
     @Override
-    public UserVO getLoginUser(HttpServletRequest request) {
-        String token = request.getHeader("authorization");
-        if (StringUtils.isBlank(token)){
+    public UserVO getLoginUser(HttpServletRequest request,String stringToken) {
+        String requestToken = null;
+        if (request!=null){
+            requestToken = request.getHeader("authorization");
+        }
+        if (stringToken!=null){
+            requestToken = stringToken;
+        }
+
+        if (StringUtils.isBlank(requestToken)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "token为空");
         }
         Long userId;
         try{
-            userId = jwtTool.parseToken(token);
+            userId = jwtTool.parseToken(requestToken);
         }catch (BusinessException e){
             log.info("令牌解析失败!");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "令牌错误");

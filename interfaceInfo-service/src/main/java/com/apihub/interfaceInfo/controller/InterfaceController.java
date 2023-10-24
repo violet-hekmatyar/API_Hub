@@ -31,6 +31,7 @@ public class InterfaceController {
     @ApiOperation("用户添加接口")
     @PostMapping("/add/self")
     public BaseResponse<Boolean> addInterfaceInfo(@RequestBody InterfaceInfoAddRequest interfaceInfoAddRequest, HttpServletRequest request) {
+
         if (interfaceInfoAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -38,14 +39,9 @@ public class InterfaceController {
         BeanUtils.copyProperties(interfaceInfoAddRequest, interfaceInfo);
         // 校验
         interfaceInfoService.validInterfaceInfo(interfaceInfo, true);
-        //Todo 请求用户id
-//        User loginUser = userService.getLoginUser(request);
-//        interfaceInfo.setUserId(loginUser.getId());
-        interfaceInfo.setUserId(1L);
-        boolean result = interfaceInfoService.save(interfaceInfo);
-        if (!result) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR);
-        }
+        //获取用户id，并且存储数据
+        interfaceInfoService.saveInterfaceInfo(interfaceInfo, request);
+
         return ResultUtils.success(true);
     }
 
