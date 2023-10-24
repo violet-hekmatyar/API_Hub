@@ -5,13 +5,8 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * 用户视图
- *
- * @TableName user
- */
 @Data
-public class UserVO implements Serializable {
+public class UserLoginVo implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * id
@@ -45,4 +40,9 @@ public class UserVO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+
+    /**
+    * 用户token
+    * */
+    private String token;
 }

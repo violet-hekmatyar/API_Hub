@@ -9,6 +9,7 @@ import com.apihub.common.exception.BusinessException;
 import com.apihub.user.annotation.AuthCheck;
 import com.apihub.user.model.dto.*;
 import com.apihub.user.model.entity.User;
+import com.apihub.user.model.vo.UserLoginVo;
 import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -52,7 +53,7 @@ public class userController {
 
     @ApiOperation("用户登录")
     @PostMapping("login")
-    public UserVO login(@RequestBody LoginFormDTO loginFormDTO) {
+    public BaseResponse<UserLoginVo> login(@RequestBody LoginFormDTO loginFormDTO) {
         if (loginFormDTO == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -61,7 +62,8 @@ public class userController {
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        return userService.login(loginFormDTO);
+        UserLoginVo userLoginVo =  userService.login(loginFormDTO);
+        return ResultUtils.success(userLoginVo);
     }
 
     @ApiOperation("获取当前登录用户")
