@@ -1,6 +1,6 @@
 package com.apihub.interfaceInfo.service;
 
-import com.apihub.interfaceInfo.domain.InterfaceInfo;
+import com.apihub.interfaceInfo.model.domain.InterfaceInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -10,4 +10,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface InterfaceInfoService extends IService<InterfaceInfo> {
 
+    void validInterfaceInfo(InterfaceInfo interfaceInfo, boolean b);
 }

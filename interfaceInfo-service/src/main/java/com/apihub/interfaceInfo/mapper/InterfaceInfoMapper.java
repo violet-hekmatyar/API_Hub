@@ -1,6 +1,6 @@
 package com.apihub.interfaceInfo.mapper;
 
-import com.apihub.interfaceInfo.domain.InterfaceInfo;
+import com.apihub.interfaceInfo.model.domain.InterfaceInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

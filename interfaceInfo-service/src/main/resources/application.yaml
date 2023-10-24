@@ -54,4 +54,4 @@ knife4j:
         group-name: default
         api-rule: package
         api-rule-resources:
-          - com.apihub.user.controller
+          - com.apihub.interfaceInfo.controller
