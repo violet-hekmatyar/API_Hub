@@ -6,8 +6,6 @@ import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
 * @author IKUN
 * @description 针对表【user(用户)】的数据库操作Service
@@ -20,5 +18,5 @@ public interface UserService extends IService<User> {
     UserLoginVO login(LoginFormDTO loginFormDTO);
 
     //Todo request和token需优化（删除request和token参数）
-    UserVO getLoginUser(HttpServletRequest request,String token);
+    UserVO getLoginUser();
 }

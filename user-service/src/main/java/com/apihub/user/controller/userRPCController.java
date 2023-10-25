@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Objects;
+
+import static com.apihub.user.utils.UserConstant.ADMIN_ROLE;
 
 @Api(tags = "userRPC接口")
 @RestController
@@ -21,11 +24,19 @@ public class userRPCController {
     @Resource
     private UserService userService;
 
-    @ApiOperation("gpc获取当前登录用户")
+    @ApiOperation("获取当前登录用户")
     @GetMapping("/get/login")
     public UserVO getLoginUser() {
         UserVO user;
-        user = userService.getLoginUser(null,null);
+        user = userService.getLoginUser();
         return user;
+    }
+
+    @ApiOperation("获取当前登录用户")
+    @GetMapping("/checkAdmin")
+    public Boolean checkAdmin() {
+        UserVO user;
+        user = userService.getLoginUser();
+        return Objects.equals(user.getUserRole(), ADMIN_ROLE);
     }
 }

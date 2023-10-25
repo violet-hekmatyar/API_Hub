@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -148,7 +147,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public UserVO getLoginUser(HttpServletRequest request, String stringToken) {
+    public UserVO getLoginUser() {
         Long userId = UserHolder.getUser();
         if (userId == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");

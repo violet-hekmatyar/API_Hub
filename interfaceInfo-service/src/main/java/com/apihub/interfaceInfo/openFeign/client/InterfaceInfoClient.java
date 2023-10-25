@@ -9,4 +9,7 @@ public interface InterfaceInfoClient {
 
     @GetMapping("/api/userRPC/get/login")
     UserVO getCurrentUser();
+
+    @GetMapping("/api/userRPC/checkAdmin")
+    Boolean checkAdmin();
 }
