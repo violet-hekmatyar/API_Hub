@@ -2,9 +2,9 @@ package com.apihub.interfaceInfo.service.impl;
 
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
+import com.apihub.common.utils.UserHolder;
 import com.apihub.interfaceInfo.mapper.InterfaceInfoMapper;
 import com.apihub.interfaceInfo.model.domain.InterfaceInfo;
-import com.apihub.interfaceInfo.model.vo.UserVO;
 import com.apihub.interfaceInfo.openFeign.client.InterfaceInfoClient;
 import com.apihub.interfaceInfo.service.InterfaceInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -45,12 +45,13 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
 
     @Override
     public void saveInterfaceInfo(InterfaceInfo interfaceInfo, HttpServletRequest request) {
-        UserVO userVO = interfaceInfoClient.getCurrentUser();
-        if (userVO == null || userVO.getId() == null){
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
+        //用于测试openFeign远程调用是否成功
+//        UserVO userVO = interfaceInfoClient.getCurrentUser();
+//        if (userVO == null || userVO.getId() == null){
+//            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+//        }
         InterfaceInfo interfaceInfoSave = interfaceInfo;
-        interfaceInfoSave.setUserId(userVO.getId());
+        interfaceInfoSave.setUserId(UserHolder.getUser());
         boolean result = this.save(interfaceInfo);
         if (!result) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR);
