@@ -1,3 +1,7 @@
-#org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.apihub.common.exception.GlobalExceptionHandler,\
+  com.apihub.common.config.MvcConfig
+
+
+#  com.apihub.common.config.JsonConfig,\
 #  com.apihub.common.config.MyBatisConfig,\
-#  com.apihub.common.config.JsonConfig

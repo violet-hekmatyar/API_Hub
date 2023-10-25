@@ -24,9 +24,20 @@ spring:
           predicates: # 路由断言，判断当前请求是否符合当前规则，符合则路由到目标服务
             - Path=/api/interfaceInfo/** # 这里是以请求路径作为判断规则
 
-#apihub:
-#  jwt:
-#    location: classpath:hmall.jks
-#    alias: hmall
-#    password: hmall123
-#    tokenTTL: 30m
+logging:
+  level:
+    com.apihub.user: debug
+  pattern:
+    dateformat: HH:mm:ss:SSS
+  file:
+    path: "logs/${spring.application.name}"
+
+apihub:
+  jwt:
+    location: classpath:hmall.jks
+    alias: hmall
+    password: hmall123
+    tokenTTL: 30m
+  auth:
+    excludePaths:
+      - /api/user/login

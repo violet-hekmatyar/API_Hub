@@ -6,10 +6,12 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
+import com.apihub.common.utils.UserHolder;
 import com.apihub.user.config.JwtProperties;
 import com.apihub.user.mapper.UserMapper;
 import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
+import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
 import com.apihub.user.utils.JwtTool;
@@ -34,15 +36,15 @@ import static com.apihub.user.utils.UserConstant.BAN_ROLE;
 import static com.apihub.user.utils.UserConstant.MD5_SALT;
 
 /**
-* @author IKUN
-* @description 针对表【user(用户)】的数据库操作Service实现
-* @createDate 2023-10-22 23:40:52
-*/
+ * @author IKUN
+ * @description 针对表【user(用户)】的数据库操作Service实现
+ * @createDate 2023-10-22 23:40:52
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
-implements UserService{
+        implements UserService {
 
     @Resource
     private UserMapper userMapper;
@@ -98,7 +100,7 @@ implements UserService{
     private final JwtProperties jwtProperties;
 
     @Override
-    public UserVO login(LoginFormDTO loginFormDTO) {
+    public UserLoginVO login(LoginFormDTO loginFormDTO) {
         // 1.数据校验
         String userAccount = loginFormDTO.getUserAccount();
         String userPassword = loginFormDTO.getUserPassword();
@@ -114,11 +116,11 @@ implements UserService{
         User user = userMapper.selectOne(queryWrapper);
         // 用户不存在
         if (user == null) {
-            log.info("user login failed, userAccount cannot match userPassword");
+            log.info("用户不存在或密码错误");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
 
-        if (user.getUserRole().equals(BAN_ROLE)){
+        if (user.getUserRole().equals(BAN_ROLE)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
         }
 
@@ -126,57 +128,70 @@ implements UserService{
         String token = jwtTool.createToken(user.getId(), jwtProperties.getTokenTTL());
 
         // 6.封装VO
-        UserVO userVo;
-        userVo = BeanUtil.copyProperties(user, UserVO.class);
-        userVo.setToken(token);
+        UserLoginVO userLoginVo;
+        userLoginVo = BeanUtil.copyProperties(user, UserLoginVO.class);
 
         // 7.保存用户信息到 redis中
-        Map<String, Object> userMap = BeanUtil.beanToMap(userVo, new HashMap<>(),
+        Map<String, Object> userMap = BeanUtil.beanToMap(userLoginVo, new HashMap<>(),
                 CopyOptions.create()
                         .setIgnoreNullValue(true)
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue != null ? fieldValue.toString() : ""));
 
-        String tokenKey = LOGIN_USER_KEY + user.getId();
-        stringRedisTemplate.opsForHash().putAll(tokenKey,userMap);
+        String key = LOGIN_USER_KEY + user.getId();
+        stringRedisTemplate.opsForHash().putAll(key, userMap);
         // 7.4.设置token有效期
-        stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
+        stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
         // 8.返回token+user信息
-
-        return userVo;
+        userLoginVo.setToken(token);
+        return userLoginVo;
     }
 
     @Override
-    public UserVO getLoginUser(HttpServletRequest request,String stringToken) {
-        String requestToken = null;
-        if (request!=null){
-            requestToken = request.getHeader("authorization");
-        }
-        if (stringToken!=null){
-            requestToken = stringToken;
-        }
-
-        if (StringUtils.isBlank(requestToken)){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "token为空");
-        }
-        Long userId;
-        try{
-            userId = jwtTool.parseToken(requestToken);
-        }catch (BusinessException e){
-            log.info("令牌解析失败!");
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "令牌错误");
-        }
-        String tokenKey = LOGIN_USER_KEY + userId;
-        Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
-        if (userMap.isEmpty()) {
+    public UserVO getLoginUser(HttpServletRequest request, String stringToken) {
+        Long userId = UserHolder.getUser();
+        if (userId == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
         }
-        if (userMap.get("userRole").equals(BAN_ROLE)){
+
+        String tokenKey = LOGIN_USER_KEY + userId;
+
+        //如果不想用redis,直接将userMap设置为空，下面redis代码注释掉
+        Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
+        if (userMap.isEmpty()) {
+//            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
+            User user = this.getById(userId);
+            if (user == null) {
+                log.info("用户不存在或密码错误");
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+            }
+
+            if (user.getUserRole().equals(BAN_ROLE)) {
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
+            }
+
+            UserVO userVo;
+            userVo = BeanUtil.copyProperties(user, UserVO.class);
+
+            //不想使用redis，把这个注释掉
+            Map<String, Object> userVoMap = BeanUtil.beanToMap(userVo, new HashMap<>(),
+                    CopyOptions.create()
+                            .setIgnoreNullValue(true)
+                            .setFieldValueEditor((fieldName, fieldValue) -> fieldValue != null ? fieldValue.toString() : ""));
+
+            String key = LOGIN_USER_KEY + user.getId();
+            stringRedisTemplate.opsForHash().putAll(key, userVoMap);
+            // 设置token有效期
+            stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
+
+            return userVo;
+        }
+        if (userMap.get("userRole").equals(BAN_ROLE)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
         }
         //刷新redis存储时间
         stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
-        return BeanUtil.fillBeanWithMap(userMap,new UserVO(),false);
+        return BeanUtil.fillBeanWithMap(userMap, new UserVO(), false);
     }
 }

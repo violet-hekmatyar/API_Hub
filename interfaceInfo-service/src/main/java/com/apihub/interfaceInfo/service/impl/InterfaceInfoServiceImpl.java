@@ -46,7 +46,6 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
     @Override
     public void saveInterfaceInfo(InterfaceInfo interfaceInfo, HttpServletRequest request) {
         String token = request.getHeader("authorization");
-        System.out.println(interfaceInfoClient.getCurrentUser(token));
         UserVO userVO = interfaceInfoClient.getCurrentUser(token);
         if (userVO == null || userVO.getId() == null){
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);

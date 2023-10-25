@@ -1,25 +1,22 @@
 package com.apihub.common.utils;
 
-import com.apihub.common.model.vo.UserVO;
-
 public class UserHolder {
-    private static final ThreadLocal<UserVO> tl = new ThreadLocal<>();
+    private static final ThreadLocal<Long> tl = new ThreadLocal<>();
 
     /**
      * 获取当前登录用户信息
      * @return 用户id
      */
-    public static UserVO getUser() {
+    public static Long getUser() {
         return tl.get();
     }
 
-    
-
     /**
      * 保存当前登录用户信息到ThreadLocal
+     * @param userId 用户id
      */
-    public static void saveUser(UserVO user){
-        tl.set(user);
+    public static void setUser(Long userId) {
+        tl.set(userId);
     }
 
     /**
