@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-public class UserLoginVo implements Serializable {
+public class UserLoginVO implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * id

@@ -11,7 +11,7 @@ import com.apihub.user.config.JwtProperties;
 import com.apihub.user.mapper.UserMapper;
 import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
-import com.apihub.user.model.vo.UserLoginVo;
+import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
 import com.apihub.user.utils.JwtTool;
@@ -100,7 +100,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private final JwtProperties jwtProperties;
 
     @Override
-    public UserLoginVo login(LoginFormDTO loginFormDTO) {
+    public UserLoginVO login(LoginFormDTO loginFormDTO) {
         // 1.数据校验
         String userAccount = loginFormDTO.getUserAccount();
         String userPassword = loginFormDTO.getUserPassword();
@@ -128,8 +128,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String token = jwtTool.createToken(user.getId(), jwtProperties.getTokenTTL());
 
         // 6.封装VO
-        UserLoginVo userLoginVo;
-        userLoginVo = BeanUtil.copyProperties(user, UserLoginVo.class);
+        UserLoginVO userLoginVo;
+        userLoginVo = BeanUtil.copyProperties(user, UserLoginVO.class);
 
         // 7.保存用户信息到 redis中
         Map<String, Object> userMap = BeanUtil.beanToMap(userLoginVo, new HashMap<>(),
@@ -149,25 +149,42 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public UserVO getLoginUser(HttpServletRequest request, String stringToken) {
-//        String requestToken = null;
-//        if (request!=null){
-//            requestToken = request.getHeader("authorization");
-//        }
-//        if (stringToken!=null){
-//            requestToken = stringToken;
-//        }
-
-//        if (StringUtils.isBlank(requestToken)){
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR, "token为空");
-//        }
         Long userId = UserHolder.getUser();
         if (userId == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
         }
+
         String tokenKey = LOGIN_USER_KEY + userId;
+
+        //如果不想用redis,直接将userMap设置为空，下面redis代码注释掉
         Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
         if (userMap.isEmpty()) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
+//            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
+            User user = this.getById(userId);
+            if (user == null) {
+                log.info("用户不存在或密码错误");
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+            }
+
+            if (user.getUserRole().equals(BAN_ROLE)) {
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
+            }
+
+            UserVO userVo;
+            userVo = BeanUtil.copyProperties(user, UserVO.class);
+
+            //不想使用redis，把这个注释掉
+            Map<String, Object> userVoMap = BeanUtil.beanToMap(userVo, new HashMap<>(),
+                    CopyOptions.create()
+                            .setIgnoreNullValue(true)
+                            .setFieldValueEditor((fieldName, fieldValue) -> fieldValue != null ? fieldValue.toString() : ""));
+
+            String key = LOGIN_USER_KEY + user.getId();
+            stringRedisTemplate.opsForHash().putAll(key, userVoMap);
+            // 设置token有效期
+            stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
+
+            return userVo;
         }
         if (userMap.get("userRole").equals(BAN_ROLE)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
