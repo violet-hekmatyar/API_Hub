@@ -1,5 +1,6 @@
 package com.apihub.common.common;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -15,6 +16,7 @@ public class DeleteRequest implements Serializable {
     /**
      * id
      */
+    @ApiModelProperty(value = "删除id", required = true)
     private Long id;
 }
 

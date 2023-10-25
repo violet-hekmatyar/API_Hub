@@ -70,7 +70,7 @@ public class userController {
     @GetMapping("/get/login")
     public BaseResponse<UserVO> getLoginUser(HttpServletRequest request) {
         UserVO user;
-        user = userService.getLoginUser(request,null);
+        user = userService.getLoginUser();
         if (user == null) {
             return new BaseResponse<>(NOT_LOGIN_ERROR);
         }
@@ -178,7 +178,7 @@ public class userController {
         if (UserUpdateVoRequest == null || UserUpdateVoRequest.getId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        UserVO currentUser = userService.getLoginUser(request,null);
+        UserVO currentUser = userService.getLoginUser();
         // 只允许改自己的
         if (!currentUser.getId().equals(UserUpdateVoRequest.getId())) {
             throw new BusinessException(NO_AUTH_ERROR);
@@ -201,7 +201,7 @@ public class userController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
-        UserVO currentUser = userService.getLoginUser(request,null);
+        UserVO currentUser = userService.getLoginUser();
         //只允许自己和管理员更改
         if (!currentUser.getId().equals(deleteRequest.getId())
                 && !currentUser.getUserRole().equals(ADMIN_ROLE)) {

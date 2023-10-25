@@ -6,11 +6,14 @@ import com.apihub.user.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Objects;
+
+import static com.apihub.user.utils.UserConstant.ADMIN_ROLE;
 
 @Api(tags = "userRPC接口")
 @RestController
@@ -22,10 +25,18 @@ public class userRPCController {
     private UserService userService;
 
     @ApiOperation("获取当前登录用户")
-    @PostMapping ("/get/login")
-    public UserVO getLoginUser(String token) {
+    @GetMapping("/get/login")
+    public UserVO getLoginUser() {
         UserVO user;
-        user = userService.getLoginUser(null,token);
+        user = userService.getLoginUser();
         return user;
+    }
+
+    @ApiOperation("获取当前登录用户")
+    @GetMapping("/checkAdmin")
+    public Boolean checkAdmin() {
+        UserVO user;
+        user = userService.getLoginUser();
+        return Objects.equals(user.getUserRole(), ADMIN_ROLE);
     }
 }
