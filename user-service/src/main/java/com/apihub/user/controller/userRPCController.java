@@ -6,7 +6,7 @@ import com.apihub.user.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,11 +21,11 @@ public class userRPCController {
     @Resource
     private UserService userService;
 
-    @ApiOperation("获取当前登录用户")
-    @PostMapping ("/get/login")
-    public UserVO getLoginUser(String token) {
+    @ApiOperation("gpc获取当前登录用户")
+    @GetMapping("/get/login")
+    public UserVO getLoginUser() {
         UserVO user;
-        user = userService.getLoginUser(null,token);
+        user = userService.getLoginUser(null,null);
         return user;
     }
 }

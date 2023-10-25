@@ -157,19 +157,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String tokenKey = LOGIN_USER_KEY + userId;
 
         //如果不想用redis,直接将userMap设置为空，下面redis代码注释掉
-        Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
-        if (userMap.isEmpty()) {
-//            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
+        Map<Object, Object> userMap;
+        try{
+            userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
+        }catch (Exception e){
+            //throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
             User user = this.getById(userId);
             if (user == null) {
-                log.info("用户不存在或密码错误");
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+                log.info("用户不存在");
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
             }
-
             if (user.getUserRole().equals(BAN_ROLE)) {
                 throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
             }
-
             UserVO userVo;
             userVo = BeanUtil.copyProperties(user, UserVO.class);
 
@@ -186,6 +186,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
             return userVo;
         }
+        if (userMap.isEmpty()){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户数据为空");
+        }
+
+//
+
         if (userMap.get("userRole").equals(BAN_ROLE)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
         }

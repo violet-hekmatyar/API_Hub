@@ -4,7 +4,7 @@ server:
     context-path: /api
 spring:
   application:
-    name: user-service
+    name: gateway-service
   profiles:
     active: dev
   cloud:

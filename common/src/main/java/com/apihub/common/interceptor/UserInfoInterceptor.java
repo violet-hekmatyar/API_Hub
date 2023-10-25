@@ -13,7 +13,7 @@ public class UserInfoInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //获取请求头中的用户
         String userId = request.getHeader("userId-info");
-
+        System.out.println("------------------------header:" + userId);
         //判断是否为空，不为空则存入UserHolder
         if (StrUtil.isNotBlank(userId)) {
             UserHolder.setUser(Long.valueOf(userId));
