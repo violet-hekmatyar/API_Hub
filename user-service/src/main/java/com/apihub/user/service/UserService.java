@@ -17,6 +17,7 @@ public interface UserService extends IService<User> {
 
     UserLoginVO login(LoginFormDTO loginFormDTO);
 
-    //Todo request和token需优化（删除request和token参数）
     UserVO getLoginUser();
+
+    Boolean checkUserAK(String accessKey, String sign);
 }

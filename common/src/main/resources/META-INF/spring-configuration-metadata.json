@@ -85,7 +85,7 @@
       "name": "apihub.db.host",
       "type": "java.lang.String",
       "description": "数据库地址",
-      "defaultValue": "192.168.150.101"
+      "defaultValue": "127.0.0.1"
     },
     {
       "name": "apihub.db.port",
@@ -109,7 +109,7 @@
       "name": "apihub.db.pw",
       "type": "java.lang.String",
       "description": "数据库密码",
-      "defaultValue": "123"
+      "defaultValue": "123456"
     },
     {
       "name": "apihub.swagger.title",
