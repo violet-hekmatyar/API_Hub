@@ -132,6 +132,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         UserLoginVO userLoginVo;
         userLoginVo = BeanUtil.copyProperties(user, UserLoginVO.class);
 
+        //在redis中，以accessKey为Key，存储sign
+        String accessKey = user.getAccessKey();
+        //秘钥加密
+        Digester md5 = new Digester(DigestAlgorithm.SHA256);
+        String sign = "hekmatyar" + "." + user.getSecretKey();
+        sign = md5.digestHex(sign);
+        user.setSecretKey(sign);
+
         // 7.保存所有用户信息到 redis中
         Map<String, Object> userMap = BeanUtil.beanToMap(user, new HashMap<>(),
                 CopyOptions.create()
@@ -139,17 +147,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue != null ? fieldValue.toString() : ""));
 
         String key = LOGIN_USER_KEY + user.getId();
+        //以userId为key存一份
         stringRedisTemplate.opsForHash().putAll(key, userMap);
         // 7.4.设置token有效期
         stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
-        //在redis中，以accessKey为Key，存储sign
-        String accessKey = user.getAccessKey();
-        //秘钥加密
-        Digester md5 = new Digester(DigestAlgorithm.SHA256);
-        String sign = "hekmatyar" + "." + user.getSecretKey();
-        sign = md5.digestHex(sign);
-        stringRedisTemplate.opsForValue().set(API_ACCESS_KEY + accessKey, sign);
+        //以AK为key存一份
+        HashMap<String, Object> userAkInfo = new HashMap<>();
+        userAkInfo.put("id",String.valueOf(user.getId()));
+        userAkInfo.put("secretKey",user.getSecretKey());
+
+        stringRedisTemplate.opsForHash().putAll(API_ACCESS_KEY + accessKey, userAkInfo);
         //Todo 可将此时间设置长一些
         stringRedisTemplate.expire(API_ACCESS_KEY + accessKey,LOGIN_USER_TTL,TimeUnit.MINUTES);
 

@@ -7,6 +7,18 @@ spring:
     name: gateway-service
   profiles:
     active: dev
+  redis:
+    database: 6
+    host: 116.204.109.230
+    port: 6379
+    timeout: 5000
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 10
+        min-idle: 1
+        time-between-eviction-runs: 10s
+    password: Jimmy@2333
   cloud:
     nacos:
       server-addr: 127.0.0.1:8848
@@ -43,5 +55,11 @@ apihub:
     password: hmall123
     tokenTTL: 30m
   auth:
+    # 无需token验证的路径
     excludePaths:
       - /api/user/login
+      - /api/apiService/**
+    # 需要AK验证的路径
+    includePaths:
+      - /api/apiService/**
+#      - /api/user/get/login

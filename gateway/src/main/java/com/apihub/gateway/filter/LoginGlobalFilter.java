@@ -1,9 +1,7 @@
 package com.apihub.gateway.filter;
 
-import cn.hutool.core.util.StrUtil;
 import com.apihub.common.utils.CollUtils;
 import com.apihub.gateway.config.AuthProperties;
-import com.apihub.gateway.utils.ApiSignUtils;
 import com.apihub.gateway.utils.JwtTool;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -42,7 +40,7 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
         }
         // 3.获取请求头中的token
         String token;
-        List<String> headers = request.getHeaders().get("authorization");
+        List<String> headers = request.getHeaders().get("Authorization");
         if (!CollUtils.isEmpty(headers)) {
             token = headers.get(0);
         } else {
@@ -50,6 +48,7 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
         }
         // 4.校验并解析token
         Long userId;
+        String userIdInfo;
         try {
             userId = jwtTool.parseToken(token);
         } catch (Exception e) {
@@ -60,43 +59,11 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
         }
 
         // token有效，传递用户信息
-        String userIdInfo = userId.toString();
+         userIdInfo = userId.toString();
 
-        //Ak和Sk的检查与传递
-        //Todo 不登录的情况下，使用ak和sk也可以请求----现在需要登录且需要ak和sk
-        //获取Ak和Sk
-        String accessKey;
-        String secretKey;
-        headers = request.getHeaders().get("accessKey");
-        if (!CollUtils.isEmpty(headers)) {
-            accessKey = headers.get(0);
-        } else {
-            accessKey = null;
-        }
-        String sign;
-        headers = request.getHeaders().get("secretKey");
-        if (!CollUtils.isEmpty(headers)) {
-            secretKey = headers.get(0);
-            //签名方式
-            sign = ApiSignUtils.genSign("hekmatyar", secretKey);
-        } else {
-            secretKey = null;
-            sign = null;
-        }
-
-
-        if (StrUtil.isAllNotEmpty(accessKey, secretKey, sign)) {
-            ServerWebExchange ex = exchange.mutate()
-                    .request(b -> b.header("userId-info", userIdInfo))
-                    .request(b -> b.header("accessKey", accessKey))
-                    .request(b -> b.header("sign", sign))
-                    .build();
-        } else {
-            ServerWebExchange ex = exchange.mutate()
-                    .request(b -> b.header("userId-info", userIdInfo))
-                    .build();
-        }
-
+        ServerWebExchange ex = exchange.mutate()
+                .request(b -> b.header("userId-info", userIdInfo))
+                .build();
 
         // 放行
         return chain.filter(exchange);
