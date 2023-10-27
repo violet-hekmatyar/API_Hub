@@ -3,7 +3,9 @@ package com.apihub.user.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.crypto.digest.DigestAlgorithm;
 import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.crypto.digest.Digester;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
@@ -27,10 +29,10 @@ import org.springframework.util.DigestUtils;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static com.apihub.common.utils.RedisConstants.LOGIN_USER_KEY;
-import static com.apihub.common.utils.RedisConstants.LOGIN_USER_TTL;
+import static com.apihub.common.utils.RedisConstants.*;
 import static com.apihub.user.utils.UserConstant.BAN_ROLE;
 import static com.apihub.user.utils.UserConstant.MD5_SALT;
 
@@ -130,8 +132,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         UserLoginVO userLoginVo;
         userLoginVo = BeanUtil.copyProperties(user, UserLoginVO.class);
 
-        // 7.保存用户信息到 redis中
-        Map<String, Object> userMap = BeanUtil.beanToMap(userLoginVo, new HashMap<>(),
+        // 7.保存所有用户信息到 redis中
+        Map<String, Object> userMap = BeanUtil.beanToMap(user, new HashMap<>(),
                 CopyOptions.create()
                         .setIgnoreNullValue(true)
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue != null ? fieldValue.toString() : ""));
@@ -141,7 +143,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 7.4.设置token有效期
         stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
-        // 8.返回token+user信息
+        //在redis中，以accessKey为Key，存储sign
+        String accessKey = user.getAccessKey();
+        //秘钥加密
+        Digester md5 = new Digester(DigestAlgorithm.SHA256);
+        String sign = "hekmatyar" + "." + user.getSecretKey();
+        sign = md5.digestHex(sign);
+        stringRedisTemplate.opsForValue().set(API_ACCESS_KEY + accessKey, sign);
+        //Todo 可将此时间设置长一些
+        stringRedisTemplate.expire(API_ACCESS_KEY + accessKey,LOGIN_USER_TTL,TimeUnit.MINUTES);
+
+        // 返回token+user信息
         userLoginVo.setToken(token);
         return userLoginVo;
     }
@@ -157,9 +169,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         //如果不想用redis,直接将userMap设置为空，下面redis代码注释掉
         Map<Object, Object> userMap;
-        try{
+        try {
             userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
-        }catch (Exception e){
+        } catch (Exception e) {
             //throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
             User user = this.getById(userId);
             if (user == null) {
@@ -185,7 +197,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
             return userVo;
         }
-        if (userMap.isEmpty()){
+        if (userMap.isEmpty()) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户数据为空");
         }
 
@@ -198,5 +210,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
         return BeanUtil.fillBeanWithMap(userMap, new UserVO(), false);
+    }
+
+    @Override
+    public Boolean checkUserAK(String accessKey, String sign) {
+        //获取用户，并检查是否封禁
+        Long userId = UserHolder.getUser();
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
+        }
+
+        String tokenKey = LOGIN_USER_KEY + userId;
+
+        //
+        Map<Object, Object> userMap;
+        userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
+        if (userMap.isEmpty()) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户数据为空");
+        }
+        if (userMap.get("userRole").equals(BAN_ROLE)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "被封禁");
+        }
+
+
+        return Objects.equals(sign, stringRedisTemplate.opsForValue().get(API_ACCESS_KEY + accessKey));
     }
 }
