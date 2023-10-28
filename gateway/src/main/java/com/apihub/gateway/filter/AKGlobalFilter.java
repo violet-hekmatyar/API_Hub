@@ -65,25 +65,36 @@ public class AKGlobalFilter implements GlobalFilter, Ordered {
             secretKey = null;
             sign = null;
         }
-        if (!StrUtil.isAllNotEmpty(accessKey, secretKey, sign)){
-            // 如果无效，拦截
+        //Todo 防止同一请求反复发送
+//        //时间戳
+//        String timestamp = request.getHeaders().getFirst("timestamp");
+//        // 随机数
+//        String nonce = request.getHeaders().getFirst("nonce");
+        //请求方法
+        String method = request.getHeaders().getFirst("method");
+        //请求接口信息id
+        String interfaceId = request.getHeaders().getFirst("interfaceId");
+        if (!StrUtil.isAllNotEmpty(accessKey, secretKey, sign, method, interfaceId)) {
+            // 如果数据缺失，拦截
             ServerHttpResponse response = exchange.getResponse();
             response.setRawStatusCode(403);
             return response.setComplete();
         }
-        String userId = null;
-        try{
+        String userId;
+        try {
             Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(API_ACCESS_KEY + accessKey);
             String userSign = (String) userMap.get("secretKey");
-            if (!Objects.equals(userSign, sign))throw new RuntimeException();
+            if (!Objects.equals(userSign, sign)) throw new RuntimeException();
 
             //传递userId
             userId = (String) userMap.get("id");
             String finalUserId = userId;
             ServerWebExchange ex = exchange.mutate()
                     .request(b -> b.header("userId-info", String.valueOf(finalUserId)))
+                    .request(b -> b.header("method", String.valueOf(method)))
+                    .request(b -> b.header("interfaceId", String.valueOf(interfaceId)))
                     .build();
-        }catch (Exception e){
+        } catch (Exception e) {
             ServerHttpResponse response = exchange.getResponse();
             response.setRawStatusCode(403);
             return response.setComplete();
