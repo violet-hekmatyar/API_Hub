@@ -70,11 +70,7 @@ public class AKGlobalFilter implements GlobalFilter, Ordered {
 //        String timestamp = request.getHeaders().getFirst("timestamp");
 //        // 随机数
 //        String nonce = request.getHeaders().getFirst("nonce");
-        //请求方法
-        String method = request.getHeaders().getFirst("method");
-        //请求接口信息id
-        String interfaceId = request.getHeaders().getFirst("interfaceId");
-        if (!StrUtil.isAllNotEmpty(accessKey, secretKey, sign, method, interfaceId)) {
+        if (!StrUtil.isAllNotEmpty(accessKey, secretKey, sign)) {
             // 如果数据缺失，拦截
             ServerHttpResponse response = exchange.getResponse();
             response.setRawStatusCode(403);
@@ -91,8 +87,6 @@ public class AKGlobalFilter implements GlobalFilter, Ordered {
             String finalUserId = userId;
             ServerWebExchange ex = exchange.mutate()
                     .request(b -> b.header("userId-info", String.valueOf(finalUserId)))
-                    .request(b -> b.header("method", String.valueOf(method)))
-                    .request(b -> b.header("interfaceId", String.valueOf(interfaceId)))
                     .build();
         } catch (Exception e) {
             ServerHttpResponse response = exchange.getResponse();
