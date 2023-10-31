@@ -12,7 +12,8 @@ spring:
       server-addr: 127.0.0.1:8848
     sentinel:
       transport:
-        dashboard: 127.0.0.1:8090
+        dashboard: localhost:8090
+      http-method-specify: true
 #      server-addr: 116.204.109.230:8848 # nacos地址
 #      username: nacos
 #      password: Jimmy@2333
