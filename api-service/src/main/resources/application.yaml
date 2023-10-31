@@ -38,6 +38,8 @@ spring:
 feign:
   okhttp:
     enabled: true # 开启OKHttp功能
+  sentinel:
+    enabled: true # 开启feign对sentinel的支持
 #mybatis-plus:
 #  configuration:
 #    map-underscore-to-camel-case: false

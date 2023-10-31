@@ -42,6 +42,10 @@ public class ApiController {
         if (interfaceInfo == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "未查询到有效接口");
         }
+        if (interfaceInfo.getId()==0){
+            System.out.println("id===0---------------------------------------------");
+            throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "服务器繁忙，请稍后重试");
+        }
         if(!Objects.equals(interfaceInfo.getMethod(), "get")){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求方法错误");
         }
