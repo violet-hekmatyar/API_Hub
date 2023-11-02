@@ -10,6 +10,10 @@ spring:
   cloud:
     nacos:
       server-addr: 127.0.0.1:8848
+    sentinel:
+      transport:
+        dashboard: localhost:8090
+      http-method-specify: true
 #      server-addr: 116.204.109.230:8848 # nacos地址
 #      username: nacos
 #      password: Jimmy@2333
@@ -34,6 +38,8 @@ spring:
 feign:
   okhttp:
     enabled: true # 开启OKHttp功能
+  sentinel:
+    enabled: true # 开启feign对sentinel的支持
 #mybatis-plus:
 #  configuration:
 #    map-underscore-to-camel-case: false
