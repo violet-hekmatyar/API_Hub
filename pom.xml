@@ -13,6 +13,7 @@
         <module>interfaceInfo-service</module>
         <module>gateway</module>
         <module>api-service</module>
+        <module>pay-service</module>
     </modules>
     <version>1.0.0</version>
 

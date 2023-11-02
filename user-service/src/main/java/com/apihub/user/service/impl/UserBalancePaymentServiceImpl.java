@@ -45,7 +45,10 @@ public class UserBalancePaymentServiceImpl extends ServiceImpl<UserBalancePaymen
 
     @Override
     public Boolean chargeBalance(Integer amount) {
-        log.info("开始充值");
+        log.info("开始充值,充值用户Id：" + UserHolder.getUser() + "充值金额：" + amount);
+        if (UserHolder.getUser() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
         QueryWrapper<UserBalancePayment> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userId", UserHolder.getUser());
         UserBalancePayment userBalancePayment = userBalancePaymentMapper.selectOne(queryWrapper);
