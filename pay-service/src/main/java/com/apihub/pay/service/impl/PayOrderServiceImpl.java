@@ -72,8 +72,6 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder>
 
         PayOrder payOrderQuery = new PayOrder();
         BeanUtils.copyProperties(payOrderQueryRequest, payOrderQuery);
-        //只能查询自己的订单
-        payOrderQuery.setBizUserId(UserHolder.getUser());
         QueryWrapper<PayOrder> queryWrapper = new QueryWrapper<>(payOrderQuery);
 
         Page<PayOrder> payOrders = this.page(new Page<>(current, size), queryWrapper);

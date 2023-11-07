@@ -5,6 +5,7 @@ import com.apihub.common.common.BaseResponse;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.common.ResultUtils;
 import com.apihub.common.exception.BusinessException;
+import com.apihub.common.utils.UserHolder;
 import com.apihub.pay.model.dto.ChargePayDTO;
 import com.apihub.pay.model.dto.DeductPayDTO;
 import com.apihub.pay.model.dto.PayOrderQueryRequest;
@@ -57,11 +58,13 @@ public class PayOrderController {
     @ApiOperation("分页搜索支付单")
     @GetMapping("/list/page")
     public BaseResponse<Page<PayOrderVO>> listPayOrderByPage(@RequestBody PayOrderQueryRequest payOrderQueryRequest) {
+        //只允许查询自己的订单
+        payOrderQueryRequest.setBizUserId(UserHolder.getUser());
         return ResultUtils.success(payOrderService.listPayOrderByPage(payOrderQueryRequest));
     }
 
     @ApiOperation("分页搜索支付单")
-    @GetMapping("/admin/list/page")
+    @GetMapping("/list/page/admin")
     public BaseResponse<Page<PayOrderVO>> adminListPayOrderByPage(@RequestBody PayOrderQueryRequest payOrderQueryRequest) {
         if (!payServiceClient.checkAdmin()){
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);

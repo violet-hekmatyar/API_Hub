@@ -2,18 +2,25 @@ package com.apihub.pay.service.impl;
 
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
+import com.apihub.common.utils.ThrowUtils;
 import com.apihub.common.utils.UserHolder;
 import com.apihub.pay.mapper.ApiOrderMapper;
+import com.apihub.pay.model.dto.ApiOrderQueryRequest;
 import com.apihub.pay.model.dto.DeductOrderDTO;
 import com.apihub.pay.model.entity.ApiOrder;
+import com.apihub.pay.model.vo.ApiOrderVO;
 import com.apihub.pay.service.ApiOrderService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDto;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Calendar;
-import java.util.Objects;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.apihub.pay.model.enums.OrderStatus.NOT_GENERATED_PAID;
 
@@ -37,9 +44,6 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
         }
         if (deductOrderDTO.getNum() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口id使用次数为空");
-        }
-        if (!Objects.equals(UserHolder.getUser(), deductOrderDTO.getUserId())) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户ID不正确");
         }
         if (deductOrderDTO.getTotalFee() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "总费用为空");
@@ -69,7 +73,7 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
         //没查询到订单，新建订单
         ApiOrder newOrder = new ApiOrder();
         newOrder.setInterfaceId(deductOrderDTO.getInterfaceId());
-        newOrder.setUserId(deductOrderDTO.getUserId());
+        newOrder.setUserId(UserHolder.getUser());
         newOrder.setNum(deductOrderDTO.getNum());
         newOrder.setPaymentType(deductOrderDTO.getPaymentType());
         newOrder.setTotalFee(deductOrderDTO.getTotalFee());
@@ -77,7 +81,7 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
         newOrder.setStatus(NOT_GENERATED_PAID.getCode());
 
 
-        //结束时间设置为当天的23:59:59
+        //结束时间设置为当天的23:59:00
         newOrder.setEndTime(newCalendar.getTime());
         //选择今天的日期，指定时间，以string形式存储
         newOrder.setOtherInfo(newCalendar.getTime().toString());
@@ -87,6 +91,41 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
         newOrder.setUserAddress("127.0.0.1");
 
         return this.save(newOrder);
+    }
+
+    @Override
+    public Page<ApiOrderVO> listPayOrderByPage(ApiOrderQueryRequest apiOrderQueryRequest) {
+        long current = apiOrderQueryRequest.getCurrent();
+        long size = apiOrderQueryRequest.getPageSize();
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+
+        ApiOrder apiOrderQuery = new ApiOrder();
+        BeanUtils.copyProperties(apiOrderQueryRequest, apiOrderQuery);
+        QueryWrapper<ApiOrder> queryWrapper = new QueryWrapper<>(apiOrderQuery);
+
+        //Todo 费用区间查询
+        /*if (apiOrderQueryRequest.getMaxFee() != null) {
+            queryWrapper.le("totalFee", apiOrderQueryRequest.getMaxFee());
+        }
+        if (apiOrderQueryRequest.getMinFee() != null) {
+            if (apiOrderQueryRequest.getMaxFee() != null && apiOrderQueryRequest.getMaxFee() < apiOrderQueryRequest.getMinFee())
+                throw new BusinessException(ErrorCode.PARAMS_ERROR);
+
+            queryWrapper.lt("totalFee", apiOrderQueryRequest.getMinFee());
+        }
+        String sql = queryWrapper.getTargetSql();
+        log.warn(sql);*/
+
+
+        Page<ApiOrder> apiOrders = this.page(new Page<>(current, size), queryWrapper);
+        Page<ApiOrderVO> apiOrderVOPage = new PageDto<>(apiOrders.getCurrent(), apiOrders.getSize(), apiOrders.getTotal());
+        List<ApiOrderVO> apiOrderVOS = apiOrders.getRecords().stream().map(apiOrder -> {
+            ApiOrderVO apiOrderVO = new ApiOrderVO();
+            BeanUtils.copyProperties(apiOrder, apiOrderVO);
+            return apiOrderVO;
+        }).collect(Collectors.toList());
+        apiOrderVOPage.setRecords(apiOrderVOS);
+        return apiOrderVOPage;
     }
 }
 

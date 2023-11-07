@@ -24,11 +24,6 @@ public class DeductOrderDTO {
     private Long interfaceId;
 
     /**
-     * 用户id
-     */
-    private Long userId;
-
-    /**
      * 使用次数
      */
     private Long num;
