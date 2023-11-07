@@ -2,9 +2,11 @@ package com.apihub.user.service.impl;
 
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
+import com.apihub.common.utils.BeanUtils;
 import com.apihub.common.utils.UserHolder;
 import com.apihub.user.mapper.UserBalancePaymentMapper;
 import com.apihub.user.model.entity.UserBalancePayment;
+import com.apihub.user.model.vo.UserBalanceVO;
 import com.apihub.user.service.UserBalancePaymentService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author IKUN
@@ -58,6 +61,17 @@ public class UserBalancePaymentServiceImpl extends ServiceImpl<UserBalancePaymen
         //扣减余额
         userBalancePayment.setBalance(userBalancePayment.getBalance() + amount);
         return this.updateById(userBalancePayment);
+    }
+
+    @Override
+    public UserBalanceVO getBalance(HttpServletRequest request) {
+        QueryWrapper<UserBalancePayment> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId", UserHolder.getUser());
+        UserBalancePayment userBalancePayment = userBalancePaymentMapper.selectOne(queryWrapper);
+        if (userBalancePayment.getUserId() == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未查询到用户余额信息");
+        }
+        return BeanUtils.toBean(userBalancePayment, UserBalanceVO.class);
     }
 }
 

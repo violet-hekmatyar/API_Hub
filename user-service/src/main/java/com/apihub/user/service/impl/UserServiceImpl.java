@@ -140,6 +140,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         sign = md5.digestHex(sign);
         user.setSecretKey(sign);
 
+        //todo 把用户余额信息也存储到redis中
         // 7.保存所有用户信息到 redis中
         Map<String, Object> userMap = BeanUtil.beanToMap(user, new HashMap<>(),
                 CopyOptions.create()
@@ -175,7 +176,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         String tokenKey = LOGIN_USER_KEY + userId;
 
-        //如果不想用redis,直接将userMap设置为空，下面redis代码注释掉
+        //如果不想用redis,将下列代码改造即可
+        //尝试使用redis查询用户信息，如果没有查询到，则通过MySQL查询到后，重新生成到redis中
         Map<Object, Object> userMap;
         try {
             userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
