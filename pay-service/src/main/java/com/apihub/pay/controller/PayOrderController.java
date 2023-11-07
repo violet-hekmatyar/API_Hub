@@ -41,7 +41,7 @@ public class PayOrderController {
 
     @ApiOperation("生成支付单")
     @PostMapping("/deduct")
-    public String deductPayOrder(@RequestBody DeductPayDTO deductPayDTO) {
+    public Boolean deductPayOrder(@RequestBody DeductPayDTO deductPayDTO) {
         if (!PayType.BALANCE.equalsValue(deductPayDTO.getPayType())) {
             // 目前只支持余额支付
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "仅支持余额支付");

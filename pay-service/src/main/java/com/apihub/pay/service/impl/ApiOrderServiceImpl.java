@@ -15,6 +15,8 @@ import javax.annotation.Resource;
 import java.util.Calendar;
 import java.util.Objects;
 
+import static com.apihub.pay.model.enums.OrderStatus.NOT_GENERATED_PAID;
+
 /**
  * @author IKUN
  * @description 针对表【api_order】的数据库操作Service实现
@@ -72,7 +74,7 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
         newOrder.setPaymentType(deductOrderDTO.getPaymentType());
         newOrder.setTotalFee(deductOrderDTO.getTotalFee());
 
-        newOrder.setStatus(2);
+        newOrder.setStatus(NOT_GENERATED_PAID.getCode());
 
 
         //结束时间设置为当天的23:59:59
