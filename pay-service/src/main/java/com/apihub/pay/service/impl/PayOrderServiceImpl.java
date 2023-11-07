@@ -46,7 +46,8 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder>
         calendar.add(Calendar.MINUTE, 15);
         initPayOrder.setPayOverTime(calendar.getTime());
 
-        //直接支付成功
+        //todo 需要接入第三方支付
+        //这里就直接支付成功
         calendar = Calendar.getInstance();
         initPayOrder.setPaySuccessTime(calendar.getTime());
         initPayOrder.setStatus(PayStatus.TRADE_SUCCESS.getValue());

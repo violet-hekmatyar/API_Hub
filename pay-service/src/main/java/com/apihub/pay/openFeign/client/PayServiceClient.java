@@ -11,4 +11,6 @@ public interface PayServiceClient {
 
     @PutMapping("/api/user/balance/charge")
     Boolean chargeBalance(@RequestParam("amount") Integer amount);
+
+
 }
