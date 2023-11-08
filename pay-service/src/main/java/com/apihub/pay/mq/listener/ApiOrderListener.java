@@ -28,7 +28,6 @@ public class ApiOrderListener {
     ))
     public void deductOrder(DeductOrderMqDTO deductOrderMqDTO) {
         log.info("收到队列消息");
-        System.out.println(deductOrderMqDTO);
         DeductOrderDTO deductOrderDTO = new DeductOrderDTO();
         BeanUtils.copyProperties(deductOrderMqDTO,deductOrderDTO);
         apiOrderService.deductOrder(deductOrderDTO, deductOrderMqDTO.getUserId());
