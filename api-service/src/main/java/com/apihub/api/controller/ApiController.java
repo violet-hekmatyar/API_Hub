@@ -6,6 +6,7 @@ import cn.hutool.core.util.URLUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.apihub.api.model.domain.InterfaceInfo;
+import com.apihub.api.model.dto.DeductOrderMqDTO;
 import com.apihub.api.openFeign.client.InterfaceInfoServiceClient;
 import com.apihub.common.common.BaseResponse;
 import com.apihub.common.common.ErrorCode;
@@ -15,6 +16,7 @@ import com.apihub.common.utils.UserHolder;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,12 +28,13 @@ import javax.servlet.http.HttpServletRequest;
 public class ApiController {
     private final InterfaceInfoServiceClient interfaceInfoServiceClient;
 
+    private final RabbitTemplate rabbitTemplate;
+
     @ApiOperation("get请求接口")
     @GetMapping("/get")
     public BaseResponse<Object> getInterfaceInfoById(@RequestParam("InterfaceId") long interfaceId,
                                                      @RequestParam("body") String body,
                                                      HttpServletRequest request) {
-        Long userId = UserHolder.getUser();
         //查询接口url及其他信息
         InterfaceInfo interfaceInfo = interfaceInfoServiceClient.queryItemById(interfaceId);
 
@@ -61,6 +64,19 @@ public class ApiController {
 
         //todo 扣减用户额度
         //请求成功，扣钱，使用MQ队列
+        try {
+            DeductOrderMqDTO deductOrderMqDTO = new DeductOrderMqDTO();
+            deductOrderMqDTO.setInterfaceId(interfaceInfo.getId());
+            deductOrderMqDTO.setNum(1L);
+            deductOrderMqDTO.setPaymentType(3);
+            deductOrderMqDTO.setTotalFee(interfaceInfo.getPrice());
+            deductOrderMqDTO.setUserAddress("testUserAddress");
+            deductOrderMqDTO.setUserId(UserHolder.getUser());
+            log.info("发送MQ队列请求");
+            rabbitTemplate.convertAndSend("payService.topic","order.success",deductOrderMqDTO);
+        }catch (Exception e){
+            log.error("MQ队列出错，订单发送失败：",e);
+        }
 
         return ResultUtils.success(httpResponse.body());
     }

@@ -34,7 +34,7 @@ public class ApiOrderController {
     @ApiOperation("支付订单")
     @PostMapping("/deduct")
     public Boolean deductOrder(@RequestBody DeductOrderDTO deductOrderDTO){
-        return apiOrderService.deductOrder(deductOrderDTO);
+        return apiOrderService.deductOrder(deductOrderDTO,UserHolder.getUser());
     }
 
     @ApiOperation("分页搜索api订单")

@@ -3,7 +3,6 @@ package com.apihub.pay.service.impl;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.ThrowUtils;
-import com.apihub.common.utils.UserHolder;
 import com.apihub.pay.mapper.ApiOrderMapper;
 import com.apihub.pay.model.dto.ApiOrderQueryRequest;
 import com.apihub.pay.model.dto.DeductOrderDTO;
@@ -39,7 +38,7 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
     private ApiOrderMapper apiOrderMapper;
 
     @Override
-    public Boolean deductOrder(DeductOrderDTO deductOrderDTO) {
+    public Boolean deductOrder(DeductOrderDTO deductOrderDTO,Long userId) {
         //数据检查
         if (deductOrderDTO.getInterfaceId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口id为空");
@@ -52,7 +51,7 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
         }
         //查询订单
         QueryWrapper<ApiOrder> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userId", UserHolder.getUser());
+        queryWrapper.eq("userId", userId);
         queryWrapper.eq("interfaceId", deductOrderDTO.getInterfaceId());
 
         Calendar newCalendar = Calendar.getInstance();
@@ -75,7 +74,7 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
         //没查询到订单，新建订单
         ApiOrder newOrder = new ApiOrder();
         newOrder.setInterfaceId(deductOrderDTO.getInterfaceId());
-        newOrder.setUserId(UserHolder.getUser());
+        newOrder.setUserId(userId);
         newOrder.setNum(deductOrderDTO.getNum());
         newOrder.setPaymentType(deductOrderDTO.getPaymentType());
         newOrder.setTotalFee(deductOrderDTO.getTotalFee());

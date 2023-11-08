@@ -14,7 +14,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface ApiOrderService extends IService<ApiOrder> {
 
-    Boolean deductOrder(DeductOrderDTO deductOrderDTO);
+    Boolean deductOrder(DeductOrderDTO deductOrderDTO,Long userId);
 
     Page<ApiOrderVO> listPayOrderByPage(ApiOrderQueryRequest apiOrderQueryRequest);
 }
