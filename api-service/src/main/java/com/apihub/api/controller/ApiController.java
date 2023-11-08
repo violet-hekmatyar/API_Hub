@@ -37,16 +37,16 @@ public class ApiController {
                                                      HttpServletRequest request) {
         Long userId = UserHolder.getUser();
         //查询接口url及其他信息
-        InterfaceInfo interfaceInfo =  interfaceInfoServiceClient.queryItemById(interfaceId);
+        InterfaceInfo interfaceInfo = interfaceInfoServiceClient.queryItemById(interfaceId);
 
         if (interfaceInfo == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "未查询到有效接口");
         }
-        if (interfaceInfo.getId()==0){
-            System.out.println("id===0---------------------------------------------");
+        if (interfaceInfo.getId() == 0) {
+            //System.out.println("id===0---------------------------------------------");
             throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "服务器繁忙，请稍后重试");
         }
-        if(!Objects.equals(interfaceInfo.getMethod(), "get")){
+        if (!Objects.equals(interfaceInfo.getMethod(), "get")) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求方法错误");
         }
         //todo 查询是否符合请求规范
