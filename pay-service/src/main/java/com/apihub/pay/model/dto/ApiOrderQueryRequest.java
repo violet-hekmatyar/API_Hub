@@ -27,7 +27,7 @@ public class ApiOrderQueryRequest extends PageRequest implements Serializable {
     /**
      * 下限金额
      */
-    private Integer minFee = 0;
+    private Integer minFee;
 
     /**
      * 支付类型，1、支付宝，2、微信，3、扣减余额

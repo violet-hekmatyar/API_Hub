@@ -34,9 +34,14 @@ public class PayOrderQueryRequest extends PageRequest implements Serializable {
      */
     private String payChannelCode;
     /**
-     * 支付金额，单位分
+     * 支付金额（上限）
      */
-    private Integer amount;
+    private Integer maxAmount;
+    /**
+     * 支付金额（下限）
+     */
+    private Integer minAmount;
+
     /**
      * 支付类型，1：h5,2:小程序，3：公众号，4：扫码，5：余额支付
      */

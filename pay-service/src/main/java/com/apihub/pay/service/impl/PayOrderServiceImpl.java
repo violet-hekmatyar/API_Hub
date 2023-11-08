@@ -1,6 +1,7 @@
 package com.apihub.pay.service.impl;
 
 import com.apihub.common.common.ErrorCode;
+import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.ThrowUtils;
 import com.apihub.common.utils.UserHolder;
 import com.apihub.pay.mapper.PayOrderMapper;
@@ -70,9 +71,21 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder>
         long size = payOrderQueryRequest.getPageSize();
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
 
+        Integer maxAmount = payOrderQueryRequest.getMaxAmount();
+        Integer minAmount = payOrderQueryRequest.getMinAmount();
+
         PayOrder payOrderQuery = new PayOrder();
         BeanUtils.copyProperties(payOrderQueryRequest, payOrderQuery);
         QueryWrapper<PayOrder> queryWrapper = new QueryWrapper<>(payOrderQuery);
+
+        //金额查询
+        if (maxAmount != null) {
+            queryWrapper.le("amount",maxAmount);
+        }
+        if (minAmount!=null){
+            if (maxAmount!=null && maxAmount<minAmount) throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            queryWrapper.ge("amount",minAmount);
+        }
 
         Page<PayOrder> payOrders = this.page(new Page<>(current, size), queryWrapper);
         Page<PayOrderVO> payOrderVOPage = new PageDto<>(payOrders.getCurrent(), payOrders.getSize(), payOrders.getTotal());

@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDto;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,7 @@ import static com.apihub.pay.model.enums.OrderStatus.NOT_GENERATED_PAID;
  * @createDate 2023-11-07 13:15:27
  */
 @Service
+@Slf4j
 public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
         implements ApiOrderService {
 
@@ -97,31 +99,38 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
     public Page<ApiOrderVO> listPayOrderByPage(ApiOrderQueryRequest apiOrderQueryRequest) {
         long current = apiOrderQueryRequest.getCurrent();
         long size = apiOrderQueryRequest.getPageSize();
+
+        Integer maxFee = apiOrderQueryRequest.getMaxFee();
+        Integer minFee = apiOrderQueryRequest.getMinFee();
+
+
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
 
         ApiOrder apiOrderQuery = new ApiOrder();
         BeanUtils.copyProperties(apiOrderQueryRequest, apiOrderQuery);
         QueryWrapper<ApiOrder> queryWrapper = new QueryWrapper<>(apiOrderQuery);
 
-        //Todo 费用区间查询
-        /*if (apiOrderQueryRequest.getMaxFee() != null) {
-            queryWrapper.le("totalFee", apiOrderQueryRequest.getMaxFee());
+        //费用区间查询
+        if (maxFee != null) {
+            //小于等于
+            queryWrapper.le("totalFee", maxFee);
         }
-        if (apiOrderQueryRequest.getMinFee() != null) {
-            if (apiOrderQueryRequest.getMaxFee() != null && apiOrderQueryRequest.getMaxFee() < apiOrderQueryRequest.getMinFee())
+        if (minFee != null) {
+            if (maxFee != null && maxFee < minFee) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR);
-
-            queryWrapper.lt("totalFee", apiOrderQueryRequest.getMinFee());
+            }
+            //大于等于
+            queryWrapper.ge("totalFee", minFee);
         }
-        String sql = queryWrapper.getTargetSql();
-        log.warn(sql);*/
-
+        String sql = queryWrapper.getCustomSqlSegment();
+        log.info(sql);
 
         Page<ApiOrder> apiOrders = this.page(new Page<>(current, size), queryWrapper);
         Page<ApiOrderVO> apiOrderVOPage = new PageDto<>(apiOrders.getCurrent(), apiOrders.getSize(), apiOrders.getTotal());
         List<ApiOrderVO> apiOrderVOS = apiOrders.getRecords().stream().map(apiOrder -> {
             ApiOrderVO apiOrderVO = new ApiOrderVO();
             BeanUtils.copyProperties(apiOrder, apiOrderVO);
+
             return apiOrderVO;
         }).collect(Collectors.toList());
         apiOrderVOPage.setRecords(apiOrderVOS);

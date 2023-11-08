@@ -44,7 +44,7 @@ public class ApiOrderController {
         apiOrderQueryRequest.setUserId(UserHolder.getUser());
         return ResultUtils.success(apiOrderService.listPayOrderByPage(apiOrderQueryRequest));
     }
-    @ApiOperation("分页搜索api订单")
+    @ApiOperation("管理员-分页搜索api订单")
     @GetMapping("/list/page/admin")
     public BaseResponse<Page<ApiOrderVO>> adminListApiOrderByPage(@RequestBody ApiOrderQueryRequest apiOrderQueryRequest) {
         if (!payServiceClient.checkAdmin()){

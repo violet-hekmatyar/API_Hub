@@ -63,7 +63,7 @@ public class PayOrderController {
         return ResultUtils.success(payOrderService.listPayOrderByPage(payOrderQueryRequest));
     }
 
-    @ApiOperation("分页搜索支付单")
+    @ApiOperation("管理员-分页搜索支付单")
     @GetMapping("/list/page/admin")
     public BaseResponse<Page<PayOrderVO>> adminListPayOrderByPage(@RequestBody PayOrderQueryRequest payOrderQueryRequest) {
         if (!payServiceClient.checkAdmin()){
