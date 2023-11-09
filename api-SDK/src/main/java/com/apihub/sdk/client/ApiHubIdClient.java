@@ -72,10 +72,10 @@ public class ApiHubIdClient {
     }
 
     private void paramCheck() throws ApiException {
-        if (this.accessKey == null) {
+        if (this.accessKey == null || this.accessKey.length() < 30) {
             throw new ApiException(ErrorCode.PARAMS_ERROR, "accessKey为空");
         }
-        if (this.secretKey == null) {
+        if (this.secretKey == null || this.secretKey.length() < 30) {
             throw new ApiException(ErrorCode.PARAMS_ERROR, "secretKey为空");
         }
     }
