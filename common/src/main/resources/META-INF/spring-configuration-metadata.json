@@ -11,12 +11,12 @@
     },
     {
       "name": "apihub.jwt",
-      "type": "com.apihuball.config.SecurityConfig",
+      "type": "com.apihub.common.config.SecurityConfig",
       "sourceType": "com.apihuball.config.JwtProperties"
     },
     {
       "name": "apihub.auth",
-      "type": "com.apihuball.config.MvcConfig",
+      "type": "com.apihub.common.config.MvcConfig",
       "sourceType": "com.apihuball.config.AuthProperties"
     }
   ],

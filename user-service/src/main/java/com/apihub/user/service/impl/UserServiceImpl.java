@@ -3,9 +3,7 @@ package com.apihub.user.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.crypto.digest.DigestAlgorithm;
 import cn.hutool.crypto.digest.DigestUtil;
-import cn.hutool.crypto.digest.Digester;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
@@ -135,10 +133,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //在redis中，以accessKey为Key，存储sign
         String accessKey = user.getAccessKey();
         //秘钥加密
-        Digester md5 = new Digester(DigestAlgorithm.SHA256);
-        String sign = "hekmatyar" + "." + user.getSecretKey();
-        sign = md5.digestHex(sign);
-        user.setSecretKey(sign);
+//        Digester md5 = new Digester(DigestAlgorithm.SHA256);
+//        String sign = "hekmatyar" + "." + user.getSecretKey();
+//        sign = md5.digestHex(sign);
+//        user.setSecretKey(sign);
 
         //todo 把用户余额信息也存储到redis中
         // 7.保存所有用户信息到 redis中

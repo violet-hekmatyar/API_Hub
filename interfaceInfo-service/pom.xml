@@ -11,6 +11,12 @@
     <artifactId>interfaceInfo-service</artifactId>
 
     <dependencies>
+        <!--SDK-->
+        <dependency>
+            <groupId>com.apihub</groupId>
+            <artifactId>api-SDK</artifactId>
+            <version>0.0.1</version>
+        </dependency>
         <!--common-->
         <dependency>
             <groupId>com.apihub</groupId>

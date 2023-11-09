@@ -48,39 +48,48 @@ public class AKGlobalFilter implements GlobalFilter, Ordered {
         }
         List<String> headers;
         String accessKey;
-        String secretKey;
+        String secretSign;
         headers = request.getHeaders().get("accessKey");
         if (!CollUtils.isEmpty(headers)) {
             accessKey = headers.get(0);
         } else {
             accessKey = null;
         }
-        String sign;
-        headers = request.getHeaders().get("secretKey");
+        headers = request.getHeaders().get("secretSign");
         if (!CollUtils.isEmpty(headers)) {
-            secretKey = headers.get(0);
-            //签名方式
-            sign = ApiSignUtils.genSign("hekmatyar", secretKey);
+            secretSign = headers.get(0);
         } else {
-            secretKey = null;
-            sign = null;
+            secretSign = null;
         }
-        //Todo 防止同一请求反复发送
-//        //时间戳
-//        String timestamp = request.getHeaders().getFirst("timestamp");
+        //防止同一请求反复发送
+        //时间戳
+        String timestamp = request.getHeaders().getFirst("timestamp");
+
 //        // 随机数
 //        String nonce = request.getHeaders().getFirst("nonce");
-        if (!StrUtil.isAllNotEmpty(accessKey, secretKey, sign)) {
+        if (!StrUtil.isAllNotEmpty(accessKey, secretSign, timestamp)) {
             // 如果数据缺失，拦截
             ServerHttpResponse response = exchange.getResponse();
             response.setRawStatusCode(403);
             return response.setComplete();
         }
+
+        // 时间和当前时间不能超过 5 分钟
+        long currentTime = System.currentTimeMillis() / 1000;
+        final long FIVE_MINUTES = 60 * 5L;
+        if (timestamp != null && (currentTime - Long.parseLong(timestamp)) >= FIVE_MINUTES) {
+            ServerHttpResponse response = exchange.getResponse();
+            response.setRawStatusCode(403);
+            return response.setComplete();
+        }
+
         String userId;
         try {
             Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(API_ACCESS_KEY + accessKey);
-            String userSign = (String) userMap.get("secretKey");
-            if (!Objects.equals(userSign, sign)) throw new RuntimeException();
+            //secretKey校验
+            String UserSecretKey = (String) userMap.get("secretKey");
+            String checkSign = ApiSignUtils.genSign(timestamp, UserSecretKey);
+            if (!Objects.equals(checkSign, secretSign)) throw new RuntimeException();
 
             //传递userId
             userId = (String) userMap.get("id");
