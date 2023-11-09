@@ -37,7 +37,7 @@ feign:
     enabled: true # 开启feign对sentinel的支持
 logging:
   level:
-    com.apihub.user: debug
+    com.apihub: debug
   pattern:
     dateformat: HH:mm:ss:SSS
   file:

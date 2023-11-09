@@ -47,7 +47,7 @@ mybatis-plus:
       logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
 logging:
   level:
-    com.apihub.user: debug
+    com.apihub: debug
   pattern:
     dateformat: HH:mm:ss:SSS
   file:
