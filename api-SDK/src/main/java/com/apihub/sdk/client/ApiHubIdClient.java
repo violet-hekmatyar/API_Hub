@@ -4,7 +4,8 @@ import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
-import cn.hutool.json.JSONUtil;
+import com.apihub.sdk.exception.ApiException;
+import com.apihub.sdk.exception.ErrorCode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,8 @@ public class ApiHubIdClient {
     }
 
 
-    public String interfaceIdByGet(Long interfaceId, String body) {
+    public String interfaceIdByGet(Long interfaceId, String body) throws ApiException {
+        paramCheck();
         //数据拼接
         String interfaceIdURL = URLUtil.decode(String.valueOf(interfaceId), CharsetUtil.CHARSET_UTF_8);
         String requestBody = URLUtil.decode(body, CharsetUtil.CHARSET_UTF_8);
@@ -46,24 +48,47 @@ public class ApiHubIdClient {
                         "?InterfaceId=" + interfaceIdURL + "&body=" + requestBody)
                 .addHeaders(getHeaderMap(""))
                 .execute();
-        System.out.println(httpResponse.getStatus());
         String result = httpResponse.body();
-        System.out.println(result);
+        resCheck(httpResponse.getStatus());
+//        System.out.println(result);
         return result;
     }
 
-    public String interfaceIdByPost(Long interfaceId, String body) {
-        HashMap<String, Object> paramMap = new HashMap<>();
-        paramMap.put("InterfaceId", interfaceId);
-        paramMap.put("body", body);
-        String json = JSONUtil.toJsonStr(body);
-        HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/apiService/post")
-                .addHeaders(getHeaderMap(json))
-                .body(json)
+    public String interfaceIdByPost(Long interfaceId, String body) throws ApiException {
+        paramCheck();
+
+        String interfaceIdURL = URLUtil.decode(String.valueOf(interfaceId), CharsetUtil.CHARSET_UTF_8);
+        String requestBody = URLUtil.decode(body, CharsetUtil.CHARSET_UTF_8);
+
+        HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/apiService/post" +
+                        "?InterfaceId=" + interfaceIdURL + "&body=" + requestBody)
+                .addHeaders(getHeaderMap(""))
                 .execute();
-        System.out.println(httpResponse.getStatus());
         String result = httpResponse.body();
-        System.out.println(result);
+        System.out.println(httpResponse.getStatus());
+        resCheck(httpResponse.getStatus());
+//        System.out.println(result);
         return result;
+    }
+
+    private void paramCheck() throws ApiException {
+        if (this.accessKey == null) {
+            throw new ApiException(ErrorCode.PARAMS_ERROR, "accessKey为空");
+        }
+        if (this.secretKey == null) {
+            throw new ApiException(ErrorCode.PARAMS_ERROR, "secretKey为空");
+        }
+    }
+
+    private void resCheck(int status) throws ApiException {
+        if (status == 403) {
+            throw new ApiException(ErrorCode.NO_AUTH_ERROR, "accessKey与secretKey不匹配");
+        }
+        if (status < 500 && status >= 400) {
+            throw new ApiException(ErrorCode.FORBIDDEN_ERROR, "请稍后重试");
+        }
+        if (status >= 500) {
+            throw new ApiException(ErrorCode.OPERATION_ERROR);
+        }
     }
 }

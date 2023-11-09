@@ -1,6 +1,7 @@
 package com.apihub.interfaceInfo;
 
 import com.apihub.sdk.client.ApiHubIdClient;
+import com.apihub.sdk.exception.ApiException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -14,7 +15,19 @@ public class SDKTest {
 
     @Test
     void SDKGetTest() {
-        System.out.println(apiHubIdClient.interfaceIdByGet(1L, "format=text"));
+        try {
+            System.out.println(apiHubIdClient.interfaceIdByGet(1L, "format=text"));
+        } catch (ApiException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 
+    @Test
+    void SDKPostTest() {
+        try {
+            System.out.println(apiHubIdClient.interfaceIdByPost(2L, "format=text"));
+        } catch (ApiException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
