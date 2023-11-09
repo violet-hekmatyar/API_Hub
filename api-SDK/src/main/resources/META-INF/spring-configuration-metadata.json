@@ -1,0 +1,25 @@
+{
+  "groups": [
+    {
+      "name": "apihub.sdk"
+    }
+  ],
+  "properties": [
+    {
+      "name": "apihub.sdk.ak",
+      "type": "java.lang.String",
+      "description": "用户accessKey"
+    },
+    {
+      "name": "apihub.sdk.sk",
+      "type": "java.lang.String",
+      "description": "用户secretKey"
+    },
+    {
+      "name": "apihub.sdk.token",
+      "type": "java.lang.String",
+      "description": "用户请求接口token"
+    }
+  ],
+  "hints": []
+}

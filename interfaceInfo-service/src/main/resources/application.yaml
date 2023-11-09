@@ -64,3 +64,7 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.apihub.interfaceInfo.controller
+apihub:
+  client:
+    access-key: 0c589b511c7c126b32a105195032439b
+    secret-key: 29276ec08e5f6ab62a80f7f34c06f718
