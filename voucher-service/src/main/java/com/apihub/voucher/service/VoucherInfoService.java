@@ -1,7 +1,10 @@
 package com.apihub.voucher.service;
 
+import com.apihub.voucher.model.dto.VoucherInfoAddRequest;
 import com.apihub.voucher.model.entity.VoucherInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author IKUN
@@ -10,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface VoucherInfoService extends IService<VoucherInfo> {
 
+    void saveVoucherInfo(VoucherInfoAddRequest voucherInfoAddRequest, HttpServletRequest request);
 }
