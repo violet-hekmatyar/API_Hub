@@ -25,7 +25,6 @@ public class VoucherInfoController {
     @ApiOperation("添加优惠券信息")
     @PostMapping("/add")
     public BaseResponse<Boolean> addVoucherInfo(@RequestBody VoucherInfoAddRequest voucherInfoAddRequest, HttpServletRequest request) {
-        //todo 校验当前用户为管理员
 
         voucherInfoService.saveVoucherInfo(voucherInfoAddRequest, request);
         return ResultUtils.success(true);
