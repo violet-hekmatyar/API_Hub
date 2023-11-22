@@ -15,6 +15,7 @@
         <module>api-service</module>
         <module>pay-service</module>
         <module>api-SDK</module>
+        <module>voucher-service</module>
     </modules>
     <version>1.0.0</version>
 
