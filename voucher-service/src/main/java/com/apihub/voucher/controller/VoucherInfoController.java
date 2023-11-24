@@ -2,12 +2,11 @@ package com.apihub.voucher.controller;
 
 import com.apihub.common.common.BaseResponse;
 import com.apihub.common.common.ResultUtils;
-import com.apihub.voucher.model.dto.VoucherInfoAddRequest;
-import com.apihub.voucher.model.dto.VoucherInfoDelRequest;
-import com.apihub.voucher.model.dto.VoucherInfoListRequest;
-import com.apihub.voucher.model.dto.VoucherInfoUpdateRequest;
+import com.apihub.voucher.model.dto.*;
+import com.apihub.voucher.model.entity.VoucherInfo;
 import com.apihub.voucher.model.vo.VoucherInfoVO;
 import com.apihub.voucher.service.VoucherInfoService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +21,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequestMapping("/voucherInfo")
+
 public class VoucherInfoController {
     @Resource
     private VoucherInfoService voucherInfoService;
@@ -58,11 +58,19 @@ public class VoucherInfoController {
     }
 
 
-    @ApiOperation("全局搜索优惠券信息")
-    @PostMapping("/update")
-    public BaseResponse<List<VoucherInfoVO>> listVoucherInfo(@RequestBody VoucherInfoListRequest voucherInfoListRequest,
-                                                             HttpServletRequest request) {
+    @ApiOperation("全局搜索优惠券信息（管理员）")
+    @PostMapping("/list/admin")
+    public BaseResponse<List<VoucherInfo>> listVoucherInfo(@RequestBody VoucherInfoListRequest voucherInfoListRequest,
+                                                           HttpServletRequest request) {
 
         return ResultUtils.success(voucherInfoService.listVoucherInfo(voucherInfoListRequest));
+    }
+
+    @ApiOperation("分页搜索优惠券信息")
+    @PostMapping("/list/page")
+    public BaseResponse<Page<VoucherInfoVO>> listVoucherInfoByPage(@RequestBody VoucherInfoListByPageRequest voucherInfoListByPageRequest,
+                                                                   HttpServletRequest request) {
+
+        return ResultUtils.success(voucherInfoService.listVoucherInfoByPage(voucherInfoListByPageRequest));
     }
 }
