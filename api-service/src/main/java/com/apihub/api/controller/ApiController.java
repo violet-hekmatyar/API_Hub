@@ -77,8 +77,8 @@ public class ApiController {
             deductOrderMqDTO.setUserId(UserHolder.getUser());
             log.info("发送MQ队列请求");
             rabbitTemplate.convertAndSend("payService.topic", "order.success", deductOrderMqDTO);
-        }catch (Exception e){
-            log.error("MQ队列出错，订单发送失败：",e);
+        } catch (Exception e) {
+            log.error("MQ队列出错，订单发送失败：", e);
         }
 
         return ResultUtils.success(httpResponse.body());
@@ -87,8 +87,8 @@ public class ApiController {
     @ApiOperation("post请求接口")
     @PostMapping("/post")
     public BaseResponse<Object> postInterfaceInfoById(@RequestParam("InterfaceId") long interfaceId,
-                                                     @RequestParam("body") String body,
-                                                     HttpServletRequest request) {
+                                                      @RequestParam("body") String body,
+                                                      HttpServletRequest request) {
         Long userId = UserHolder.getUser();
         //查询接口url及其他信息
         InterfaceInfo interfaceInfo = interfaceInfoServiceClient.queryItemById(interfaceId);
