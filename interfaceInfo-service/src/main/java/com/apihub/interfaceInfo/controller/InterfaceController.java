@@ -12,6 +12,7 @@ import com.apihub.interfaceInfo.model.dto.InterfaceInfoAddRequest;
 import com.apihub.interfaceInfo.model.dto.InterfaceInfoIdRequest;
 import com.apihub.interfaceInfo.model.dto.InterfaceInfoQueryRequest;
 import com.apihub.interfaceInfo.model.enums.InterfaceInfoStatusEnum;
+import com.apihub.interfaceInfo.model.vo.InterfaceInfoVO;
 import com.apihub.interfaceInfo.openFeign.client.InterfaceInfoClient;
 import com.apihub.interfaceInfo.service.InterfaceInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -87,7 +88,7 @@ public class InterfaceController {
 
     @ApiOperation("分页获取列表")
     @GetMapping("/list/page")
-    public BaseResponse<Page<InterfaceInfo>> listInterfaceInfoByPage(InterfaceInfoQueryRequest interfaceInfoQueryRequest) {
+    public BaseResponse<Page<InterfaceInfoVO>> listInterfaceInfoByPage(InterfaceInfoQueryRequest interfaceInfoQueryRequest) {
         if (interfaceInfoQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -122,7 +123,12 @@ public class InterfaceController {
                 sortOrder.equals("ascend"), sortField);
 
         Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.page(new Page<>(current, size), queryWrapper);
-        return ResultUtils.success(interfaceInfoPage);
+        Page<InterfaceInfoVO> interfaceInfoVOPage = (Page<InterfaceInfoVO>) interfaceInfoPage.convert(interfaceInfo -> {
+            InterfaceInfoVO interfaceInfoVO = new InterfaceInfoVO();
+            BeanUtils.copyProperties(interfaceInfo, interfaceInfoVO);
+            return interfaceInfoVO;
+        });
+        return ResultUtils.success(interfaceInfoVOPage);
     }
 
     @ApiOperation("接口发布")
