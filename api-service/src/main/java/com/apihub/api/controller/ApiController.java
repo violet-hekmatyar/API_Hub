@@ -42,7 +42,7 @@ public class ApiController {
         //查询接口url及其他信息
         InterfaceInfo interfaceInfo = interfaceInfoServiceClient.queryItemById(interfaceId);
 
-        getInfoAndDeduct(interfaceInfo, "get");
+        checkInfoAndDeduct(interfaceInfo, "get");
 
         //向url发请求
         String requestBody = URLUtil.decode(body, CharsetUtil.CHARSET_UTF_8);
@@ -63,7 +63,7 @@ public class ApiController {
         //查询接口url及其他信息
         InterfaceInfo interfaceInfo = interfaceInfoServiceClient.queryItemById(interfaceId);
 
-        getInfoAndDeduct(interfaceInfo, "post");
+        checkInfoAndDeduct(interfaceInfo, "post");
 
         //向url发请求
         String requestBody = URLUtil.decode(body, CharsetUtil.CHARSET_UTF_8);
@@ -76,10 +76,11 @@ public class ApiController {
         return ResultUtils.success(httpResponse.body());
     }
 
-    private void getInfoAndDeduct(InterfaceInfo interfaceInfo, String method) {
+    private void checkInfoAndDeduct(InterfaceInfo interfaceInfo, String method) {
         if (interfaceInfo == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "未查询到有效接口");
         }
+        //限流操作，返回为0则是限流
         if (interfaceInfo.getId() == 0) {
             //System.out.println("id===0---------------------------------------------");
             throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "服务器繁忙，请稍后重试");
