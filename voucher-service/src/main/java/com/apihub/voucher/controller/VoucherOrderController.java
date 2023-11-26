@@ -23,6 +23,7 @@ public class VoucherOrderController {
     @PostMapping("/{id}")
     public BaseResponse<VoucherSeckillVO> seckillVoucher(@PathVariable("id") Long voucherId) {
 
-        return voucherSeckillService.seckillVoucher(voucherId);
+        //return voucherSeckillService.seckillVoucher(voucherId);
+        return null;
     }
 }

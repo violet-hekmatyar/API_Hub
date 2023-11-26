@@ -1,4 +1,4 @@
-package com.apihub.voucher.model.dto;
+package com.apihub.voucher.model.dto.voucherinfo;
 
 import lombok.Data;
 
@@ -7,11 +7,7 @@ import java.io.Serializable;
 import static com.apihub.voucher.utils.VoucherInfoConstant.TYPE_BALANCE;
 
 @Data
-public class VoucherInfoUpdateRequest implements Serializable {
-    /**
-     * 主键
-     */
-    private Long id;
+public class VoucherInfoAddRequest implements Serializable {
     /**
      * 代金券标题
      */
@@ -44,8 +40,4 @@ public class VoucherInfoUpdateRequest implements Serializable {
      * 提供者id
      */
     private Long issuerId;
-    /**
-     * 兑换码
-     */
-    private String activationCode;
 }

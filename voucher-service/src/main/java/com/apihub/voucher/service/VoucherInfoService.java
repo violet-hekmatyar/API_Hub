@@ -1,6 +1,7 @@
 package com.apihub.voucher.service;
 
-import com.apihub.voucher.model.dto.*;
+import com.apihub.voucher.model.dto.seckillinfo.SeckillVoucherInfoAddRequest;
+import com.apihub.voucher.model.dto.voucherinfo.*;
 import com.apihub.voucher.model.entity.VoucherInfo;
 import com.apihub.voucher.model.vo.VoucherInfoVO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

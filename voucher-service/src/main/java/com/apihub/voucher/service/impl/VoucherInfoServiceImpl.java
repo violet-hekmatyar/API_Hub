@@ -6,7 +6,8 @@ import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
 import com.apihub.voucher.mapper.VoucherInfoMapper;
 import com.apihub.voucher.mapper.VoucherSeckillMapper;
-import com.apihub.voucher.model.dto.*;
+import com.apihub.voucher.model.dto.seckillinfo.SeckillVoucherInfoAddRequest;
+import com.apihub.voucher.model.dto.voucherinfo.*;
 import com.apihub.voucher.model.entity.VoucherInfo;
 import com.apihub.voucher.model.entity.VoucherSeckill;
 import com.apihub.voucher.model.vo.VoucherInfoVO;
@@ -146,7 +147,7 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
 
     @Override
     public void delVoucherInfo(VoucherInfoDelRequest voucherInfoDelRequest) {
-        //只有管理员才能添加
+        //只有管理员才能删除
         if (!voucherInfoClient.checkAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
@@ -154,6 +155,15 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
         if (id == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
+
+        //删除秒杀信息（如果有）
+        Long seckillId = this.query().eq("id", id).one().getSeckillId();
+        if (seckillId != null) {
+            VoucherInfoDelRequest voucherInfoDelRequest1 = new VoucherInfoDelRequest();
+            voucherInfoDelRequest1.setId(seckillId);
+            voucherSeckillService.delSeckillVoucherInfo(voucherInfoDelRequest1);
+        }
+        //删除基本信息
         boolean b = this.removeById(id);
         if (!b) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR);

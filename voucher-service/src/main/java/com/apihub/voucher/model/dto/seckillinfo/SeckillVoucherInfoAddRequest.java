@@ -1,4 +1,4 @@
-package com.apihub.voucher.model.dto;
+package com.apihub.voucher.model.dto.seckillinfo;
 
 import lombok.Data;
 
@@ -41,11 +41,6 @@ public class SeckillVoucherInfoAddRequest implements Serializable {
      * 提供者id
      */
     private Long issuerId;
-    /**
-     * 兑换码
-     */
-    private String activationCode;
-
 
     /**
      * 库存
@@ -59,4 +54,8 @@ public class SeckillVoucherInfoAddRequest implements Serializable {
      * 失效时间
      */
     private Date endTime;
+    /**
+     * 备注
+     */
+    private String remark;
 }
