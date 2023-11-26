@@ -21,22 +21,31 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequestMapping("/voucherInfo")
-
 public class VoucherInfoController {
     @Resource
     private VoucherInfoService voucherInfoService;
 
 
-    @ApiOperation("添加优惠券信息")
+    @ApiOperation("添加普通优惠券信息")
     @PostMapping("/add")
-    public BaseResponse<Boolean> addVoucherInfo(@RequestBody VoucherInfoAddRequest voucherInfoAddRequest,
-                                                HttpServletRequest request) {
+    public BaseResponse<Boolean> addCommonVoucherInfo(@RequestBody VoucherInfoAddRequest voucherInfoAddRequest,
+                                                      HttpServletRequest request) {
 
-        voucherInfoService.saveVoucherInfo(voucherInfoAddRequest, request);
+        voucherInfoService.saveCommonVoucherInfo(voucherInfoAddRequest, request);
         return ResultUtils.success(true);
     }
 
-    //todo 对着添加样例，写出CRUD
+    //限量优惠券即秒杀优惠券
+    @ApiOperation("添加秒杀优惠券信息")
+    @PostMapping("/add/seckill")
+    public BaseResponse<Boolean> addSeckillVoucherInfo(@RequestBody SeckillVoucherInfoAddRequest seckillVoucherInfoAddRequest,
+                                                       HttpServletRequest request) {
+
+        voucherInfoService.saveSeckillVoucherInfo(seckillVoucherInfoAddRequest, request);
+
+        return ResultUtils.success(true);
+    }
+
     //同时写出 分页查询
 
     @ApiOperation("删除优惠券信息")

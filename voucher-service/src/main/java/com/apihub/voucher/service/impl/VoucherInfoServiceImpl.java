@@ -1,14 +1,18 @@
 package com.apihub.voucher.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
 import com.apihub.voucher.mapper.VoucherInfoMapper;
+import com.apihub.voucher.mapper.VoucherSeckillMapper;
 import com.apihub.voucher.model.dto.*;
 import com.apihub.voucher.model.entity.VoucherInfo;
+import com.apihub.voucher.model.entity.VoucherSeckill;
 import com.apihub.voucher.model.vo.VoucherInfoVO;
 import com.apihub.voucher.openFeign.client.VoucherInfoClient;
 import com.apihub.voucher.service.VoucherInfoService;
+import com.apihub.voucher.service.VoucherSeckillService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,10 +21,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 
-import static com.apihub.voucher.utils.VoucherInfoConstant.STATUS_DOWN;
+import static com.apihub.voucher.utils.VoucherInfoConstant.*;
 
 /**
  * @author IKUN
@@ -33,19 +39,31 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
         implements VoucherInfoService {
     private final VoucherInfoClient voucherInfoClient;
 
+    @Resource
+    private VoucherSeckillService voucherSeckillService;
+
+    @Resource
+    private VoucherInfoMapper voucherInfoMapper;
+    @Resource
+    private VoucherSeckillMapper voucherSeckillMapper;
+
     @Override
-    public void saveVoucherInfo(VoucherInfoAddRequest voucherInfoAddRequest, HttpServletRequest request) {
-        //只有管理员才能添加
-        if (!voucherInfoClient.checkAdmin()) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+    public void saveCommonVoucherInfo(VoucherInfoAddRequest voucherInfoAddRequest, HttpServletRequest request) {
+        if (!Objects.equals(voucherInfoAddRequest.getType(), TYPE_BALANCE)
+                && !Objects.equals(voucherInfoAddRequest.getType(), TYPE_INTERFACE)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "不是普通优惠券类型");
         }
+        saveVoucherInfo(voucherInfoAddRequest);
+    }
+
+    private String saveVoucherInfo(VoucherInfoAddRequest voucherInfoAddRequest) {
         //数据校验
         if (voucherInfoAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String title = voucherInfoAddRequest.getTitle();
         if (StringUtils.isAnyBlank(title)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请填写标题");
         }
         if (title.length() > 50) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "优惠券标题过长");
@@ -58,11 +76,17 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
         if (payValue >= actualValue) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "优惠券无优惠额度");
         }
+        //只有管理员才能添加
+        if (!voucherInfoClient.checkAdmin()) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
         VoucherInfo voucherInfoSave = new VoucherInfo();
         BeanUtils.copyProperties(voucherInfoAddRequest, voucherInfoSave);
 
         //如果没有设置优惠券提供者，则默认为设置人员
         if (voucherInfoSave.getIssuerId() == null) voucherInfoSave.setIssuerId(UserHolder.getUser());
+        //生成唯一兑换码,32位
+        voucherInfoSave.setActivationCode(IdUtil.fastSimpleUUID());
 
         voucherInfoSave.setStatus(STATUS_DOWN);
 
@@ -70,6 +94,54 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
         if (!save) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR);
         }
+        return voucherInfoSave.getActivationCode();
+    }
+
+
+    @Override
+    public void saveSeckillVoucherInfo(SeckillVoucherInfoAddRequest seckillVoucherInfoAddRequest, HttpServletRequest request) {
+        Integer seckillVoucherInfoAddRequestType = seckillVoucherInfoAddRequest.getType();
+        if (!Objects.equals(seckillVoucherInfoAddRequestType, TYPE_SECKILL_BALANCE)
+                && !Objects.equals(seckillVoucherInfoAddRequestType, TYPE_SECKILL_INTERFACE)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "不是秒杀券类型");
+        }
+        //添加优惠券信息
+        VoucherInfoAddRequest voucherInfoAddRequest = new VoucherInfoAddRequest();
+        BeanUtils.copyProperties(seckillVoucherInfoAddRequest, voucherInfoAddRequest);
+        String activationCode = this.saveVoucherInfo(voucherInfoAddRequest);
+
+        //添加秒杀库存信息
+        VoucherSeckill voucherSeckill = new VoucherSeckill();
+        if (seckillVoucherInfoAddRequest.getStock() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请填写库存");
+        }
+        voucherSeckill.setStock(seckillVoucherInfoAddRequest.getStock());
+        if (seckillVoucherInfoAddRequest.getBeginTime() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请填写优惠券秒杀开始时间");
+        }
+        voucherSeckill.setBeginTime(seckillVoucherInfoAddRequest.getBeginTime());
+        if (seckillVoucherInfoAddRequest.getEndTime() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请填写优惠券秒杀过期时间");
+        }
+        voucherSeckill.setEndTime(seckillVoucherInfoAddRequest.getEndTime());
+
+        //查询voucherInfo的id，并存储
+        QueryWrapper<VoucherInfo> voucherInfoQueryWrapper = new QueryWrapper<>();
+        voucherInfoQueryWrapper.eq("activationCode", activationCode);
+        VoucherInfo voucherInfo = voucherInfoMapper.selectOne(voucherInfoQueryWrapper);
+        Long voucherInfoId = voucherInfo.getId();
+        voucherSeckill.setVoucherId(voucherInfoId);
+
+        voucherSeckillService.save(voucherSeckill);
+
+        QueryWrapper<VoucherSeckill> voucherSeckillQueryWrapper = new QueryWrapper<>();
+        voucherInfoQueryWrapper.eq("voucherId", voucherInfoId);
+        Long voucherSeckillId = voucherSeckillMapper.selectOne(voucherSeckillQueryWrapper).getId();
+        //将seckillId保存到voucherInfo中
+        VoucherInfo voucherInfo1 = new VoucherInfo();
+        voucherInfo1.setId(voucherInfoId);
+        voucherInfo1.setSeckillId(voucherSeckillId);
+        this.updateById(voucherInfo1);
     }
 
     @Override

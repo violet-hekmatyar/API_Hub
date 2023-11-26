@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface VoucherInfoService extends IService<VoucherInfo> {
 
-    void saveVoucherInfo(VoucherInfoAddRequest voucherInfoAddRequest, HttpServletRequest request);
+    void saveCommonVoucherInfo(VoucherInfoAddRequest voucherInfoAddRequest, HttpServletRequest request);
 
     void delVoucherInfo(VoucherInfoDelRequest voucherInfoDelRequest);
 
@@ -25,4 +25,6 @@ public interface VoucherInfoService extends IService<VoucherInfo> {
     List<VoucherInfo> listVoucherInfo(VoucherInfoListRequest voucherInfoListRequest);
 
     Page<VoucherInfoVO> listVoucherInfoByPage(VoucherInfoListByPageRequest voucherInfoListByPageRequest);
+
+    void saveSeckillVoucherInfo(SeckillVoucherInfoAddRequest seckillVoucherInfoAddRequest, HttpServletRequest request);
 }

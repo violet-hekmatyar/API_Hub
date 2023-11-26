@@ -1,6 +1,8 @@
 package com.apihub.voucher.service;
 
+import com.apihub.common.common.BaseResponse;
 import com.apihub.voucher.model.entity.VoucherSeckill;
+import com.apihub.voucher.model.vo.VoucherSeckillVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -10,4 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface VoucherSeckillService extends IService<VoucherSeckill> {
 
+    BaseResponse<VoucherSeckillVO> seckillVoucher(Long voucherId);
 }
