@@ -18,6 +18,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+//普通优惠券CRUD
 @RestController
 @Slf4j
 @RequestMapping("/voucherInfo")
@@ -35,16 +36,6 @@ public class VoucherInfoController {
         return ResultUtils.success(true);
     }
 
-    //限量优惠券即秒杀优惠券
-    @ApiOperation("添加秒杀优惠券信息")
-    @PostMapping("/add/seckill")
-    public BaseResponse<Boolean> addSeckillVoucherInfo(@RequestBody SeckillVoucherInfoAddRequest seckillVoucherInfoAddRequest,
-                                                       HttpServletRequest request) {
-
-        voucherInfoService.saveSeckillVoucherInfo(seckillVoucherInfoAddRequest, request);
-
-        return ResultUtils.success(true);
-    }
 
     //同时写出 分页查询
 
