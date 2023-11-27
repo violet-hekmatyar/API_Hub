@@ -152,7 +152,6 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
         voucherSeckillService.save(voucherSeckill);
 
         //查询voucherSeckillInfo的id，并存入到voucherInfo的seckillId
-
         Long voucherSeckillId = voucherSeckillService.query().eq("voucherId", voucherInfoId).one().getId();
         //将seckillId保存到voucherInfo中
         VoucherInfo voucherInfo1 = new VoucherInfo();
