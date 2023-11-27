@@ -33,11 +33,11 @@ public class VoucherSeckill implements Serializable {
      */
     private Integer stock;
     /**
-     * 生效时间
+     * 开始抢购时间
      */
     private Date beginTime;
     /**
-     * 失效时间
+     * 截止抢购时间
      */
     private Date endTime;
     /**

@@ -1,14 +1,13 @@
-package com.apihub.voucher.model.dto.seckillinfo;
+package com.apihub.voucher.model.dto.voucherinfo;
 
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
 
-import static com.apihub.voucher.utils.VoucherInfoConstant.TYPE_SECKILL_BALANCE;
+import static com.apihub.voucher.utils.VoucherInfoConstant.TYPE_BALANCE;
 
 @Data
-public class SeckillVoucherInfoAddRequest implements Serializable {
+public class VoucherInfoAdd implements Serializable {
     /**
      * 代金券标题
      */
@@ -34,33 +33,16 @@ public class SeckillVoucherInfoAddRequest implements Serializable {
      */
     private Long actualValue;
     /**
-     * 0,余额券；1,时段卡；2,秒杀余额券；3,秒杀时段卡
+     * 0,余额券；1,时段卡
      */
-    private Integer type = TYPE_SECKILL_BALANCE;
+    private Integer type = TYPE_BALANCE;
     /**
      * 提供者id
      */
     private Long issuerId;
 
     /**
-     * 库存
-     */
-    private Integer stock;
-    /**
-     * 生效时间
-     */
-    private Date beginTime;
-    /**
-     * 失效时间
-     */
-    private Date endTime;
-    /**
-     * 备注
-     */
-    private String remark;
-
-    /**
      * 时段卡生效起始时间
      */
-    private String validTime;
+    private String validTime = null;
 }

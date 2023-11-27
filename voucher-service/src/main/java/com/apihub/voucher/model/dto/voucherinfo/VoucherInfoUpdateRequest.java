@@ -41,6 +41,10 @@ public class VoucherInfoUpdateRequest implements Serializable {
      */
     private Integer type = TYPE_BALANCE;
     /**
+     * 1,上架; 2,下架; 3,过期
+     */
+    private Integer status;
+    /**
      * 提供者id
      */
     private Long issuerId;

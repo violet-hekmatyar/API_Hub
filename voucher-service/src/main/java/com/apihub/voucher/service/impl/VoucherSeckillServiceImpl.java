@@ -10,7 +10,6 @@ import com.apihub.voucher.model.dto.voucherinfo.VoucherInfoDelRequest;
 import com.apihub.voucher.model.entity.VoucherSeckill;
 import com.apihub.voucher.model.vo.VoucherSeckillVO;
 import com.apihub.voucher.openFeign.client.VoucherInfoClient;
-import com.apihub.voucher.service.VoucherInfoService;
 import com.apihub.voucher.service.VoucherSeckillService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -18,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -32,9 +30,6 @@ public class VoucherSeckillServiceImpl extends ServiceImpl<VoucherSeckillMapper,
         implements VoucherSeckillService {
 
     private final VoucherInfoClient voucherInfoClient;
-
-    @Resource
-    private VoucherInfoService voucherInfoService;
 
     @Override
     public void delSeckillVoucherInfo(VoucherInfoDelRequest voucherInfoDelRequest) {

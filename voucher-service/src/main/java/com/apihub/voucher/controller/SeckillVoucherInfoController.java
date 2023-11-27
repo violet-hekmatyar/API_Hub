@@ -39,6 +39,7 @@ public class SeckillVoucherInfoController {
     public BaseResponse<Boolean> addSeckillVoucherInfo(@RequestBody SeckillVoucherInfoAddRequest seckillVoucherInfoAddRequest,
                                                        HttpServletRequest request) {
 
+        //委托给voucherInfoService进行处理
         voucherInfoService.saveSeckillVoucherInfo(seckillVoucherInfoAddRequest, request);
 
         return ResultUtils.success(true);
