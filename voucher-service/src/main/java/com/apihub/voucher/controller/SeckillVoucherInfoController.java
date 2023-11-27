@@ -49,7 +49,8 @@ public class SeckillVoucherInfoController {
     @PostMapping("/del")
     public BaseResponse<Boolean> delSeckillVoucherInfo(@RequestBody VoucherInfoDelRequest voucherInfoDelRequest,
                                                        HttpServletRequest request) {
-        //删除秒杀信息
+        //如果需要删除基本信息,请移步VoucherInfoController
+        //此处仅删除秒杀信息
         voucherSeckillService.delSeckillVoucherInfo(voucherInfoDelRequest);
         return ResultUtils.success(true);
     }

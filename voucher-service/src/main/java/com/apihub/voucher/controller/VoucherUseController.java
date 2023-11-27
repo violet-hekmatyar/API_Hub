@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 @RequestMapping("/apiToken")
-public class UseVoucherController {
+public class VoucherUseController {
 
 
     //查询优惠券是否为时段卡
