@@ -42,7 +42,7 @@ public class VoucherInfoAdd implements Serializable {
     private Long issuerId;
 
     /**
-     * 时段卡生效起始时间
+     * 时段卡生效时间
      */
     private String validTime = null;
 }

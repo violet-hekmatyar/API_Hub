@@ -40,4 +40,9 @@ public class VoucherInfoAddRequest implements Serializable {
      * 提供者id
      */
     private Long issuerId;
+
+    /**
+     * 时段卡生效时间
+     */
+    private String validTime = null;
 }

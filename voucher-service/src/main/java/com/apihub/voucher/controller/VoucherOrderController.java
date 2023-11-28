@@ -21,13 +21,13 @@ public class VoucherOrderController {
     @Resource
     private VoucherOrderService voucherOrderService;
 
-    @PostMapping("/{id}")
-    public BaseResponse<VoucherOrderVO> createVoucherOrder(@PathVariable("id") Long voucherId) {
+    @PostMapping("/{voucherId}")
+    public BaseResponse<VoucherOrderVO> createVoucherOrder(@PathVariable("voucherId") Long voucherId) {
         return ResultUtils.success(voucherOrderService.createVoucherOrder(voucherId));
     }
 
-    @PostMapping("/seckill/{id}")
-    public BaseResponse<VoucherOrderVO> createSeckillVoucherOrder(@PathVariable("id") Long voucherId) {
+    @PostMapping("/seckill/{voucherId}")
+    public BaseResponse<VoucherOrderVO> createSeckillVoucherOrder(@PathVariable("voucherId") Long voucherId) {
 
         //return voucherSeckillService.seckillVoucher(voucherId);
         return null;

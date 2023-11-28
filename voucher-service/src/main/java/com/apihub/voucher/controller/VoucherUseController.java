@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,7 +43,8 @@ public class VoucherUseController {
     private VoucherInfoService voucherInfoService;
 
     @PostMapping("/")
-    public BaseResponse<ApiTokenVO> useVoucher(UseVoucherRequest useVoucherRequest, HttpServletRequest request) {
+    public BaseResponse<ApiTokenVO> useVoucher(@RequestBody UseVoucherRequest useVoucherRequest,
+                                               HttpServletRequest request) {
         Long voucherOrderId = useVoucherRequest.getVoucherOrderId();
         if (voucherOrderId == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单id缺失");
