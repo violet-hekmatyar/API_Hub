@@ -6,12 +6,10 @@ import com.apihub.common.common.ErrorCode;
 import com.apihub.common.common.ResultUtils;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
-import com.apihub.pay.model.dto.ChargePayDTO;
-import com.apihub.pay.model.dto.DeductPayDTO;
-import com.apihub.pay.model.dto.PayOrderQueryRequest;
-import com.apihub.pay.model.enums.PayType;
+import com.apihub.pay.model.dto.pay.ChargePayDTO;
+import com.apihub.pay.model.dto.pay.PayOrderQueryRequest;
 import com.apihub.pay.model.vo.PayOrderVO;
-import com.apihub.pay.openFeign.client.PayServiceClient;
+import com.apihub.pay.openFeign.client.UserServiceClient;
 import com.apihub.pay.service.PayOrderService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -29,7 +27,7 @@ import javax.annotation.Resource;
 @RequiredArgsConstructor
 public class PayOrderController {
 
-    private final PayServiceClient payServiceClient;
+    private final UserServiceClient userServiceClient;
     @Resource
     private PayOrderService payOrderService;
 
@@ -44,16 +42,8 @@ public class PayOrderController {
         return ResultUtils.success(true);
     }
 
-    @ApiOperation("生成支付单")
-    @PostMapping("/deduct")
-    public Boolean deductPayOrder(@RequestBody DeductPayDTO deductPayDTO) {
-        if (!PayType.BALANCE.equalsValue(deductPayDTO.getPayType())) {
-            // 目前只支持余额支付
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "仅支持余额支付");
-        }
-//        return payOrderService.deductPayOrder(deductPayDTO);
-        return null;
-    }
+
+    //不支持手动创建支付单
 
     @ApiOperation("分页搜索支付单")
     @GetMapping("/list/page")
@@ -66,7 +56,7 @@ public class PayOrderController {
     @ApiOperation("管理员-分页搜索支付单")
     @GetMapping("/list/page/admin")
     public BaseResponse<Page<PayOrderVO>> adminListPayOrderByPage(@RequestBody PayOrderQueryRequest payOrderQueryRequest) {
-        if (!payServiceClient.checkAdmin()){
+        if (!userServiceClient.checkAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         return ResultUtils.success(payOrderService.listPayOrderByPage(payOrderQueryRequest));

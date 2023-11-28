@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @FeignClient(value = "user-service",
         configuration = DefaultFeignConfig.class)
-public interface VoucherInfoClient {
+public interface UserServiceClient {
 
 
     @GetMapping("/api/userRPC/checkAdmin")

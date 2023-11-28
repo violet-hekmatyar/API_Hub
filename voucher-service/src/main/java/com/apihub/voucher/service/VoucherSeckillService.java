@@ -1,7 +1,15 @@
 package com.apihub.voucher.service;
 
+import com.apihub.voucher.model.dto.seckillinfo.SeckillVoucherInfoListByPageRequest;
+import com.apihub.voucher.model.dto.seckillinfo.SeckillVoucherInfoListRequest;
+import com.apihub.voucher.model.dto.seckillinfo.SeckillVoucherInfoUpdateRequest;
+import com.apihub.voucher.model.dto.voucherinfo.VoucherInfoDelRequest;
 import com.apihub.voucher.model.entity.VoucherSeckill;
+import com.apihub.voucher.model.vo.VoucherSeckillVO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @author IKUN
@@ -10,4 +18,13 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface VoucherSeckillService extends IService<VoucherSeckill> {
 
+    void delSeckillVoucherInfo(VoucherInfoDelRequest voucherInfoDelRequest);
+
+    void updateSeckillVoucherInfo(SeckillVoucherInfoUpdateRequest seckillVoucherInfoUpdateRequest);
+
+    List<VoucherSeckill> listSeckillVoucherInfo(SeckillVoucherInfoListRequest seckillVoucherInfoListRequest);
+
+    Page<VoucherSeckillVO> listSeckillVoucherInfoByPage(SeckillVoucherInfoListByPageRequest seckillVoucherInfoListByPageRequest);
+
+    VoucherSeckillVO getSeckillVoucherInfoById(Long id);
 }

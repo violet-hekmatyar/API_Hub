@@ -1,6 +1,7 @@
 package com.apihub.voucher.service;
 
-import com.apihub.voucher.model.dto.*;
+import com.apihub.voucher.model.dto.seckillinfo.SeckillVoucherInfoAddRequest;
+import com.apihub.voucher.model.dto.voucherinfo.*;
 import com.apihub.voucher.model.entity.VoucherInfo;
 import com.apihub.voucher.model.vo.VoucherInfoVO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,7 +17,7 @@ import java.util.List;
  */
 public interface VoucherInfoService extends IService<VoucherInfo> {
 
-    void saveVoucherInfo(VoucherInfoAddRequest voucherInfoAddRequest, HttpServletRequest request);
+    void saveCommonVoucherInfo(VoucherInfoAddRequest voucherInfoAddRequest, HttpServletRequest request);
 
     void delVoucherInfo(VoucherInfoDelRequest voucherInfoDelRequest);
 
@@ -25,4 +26,6 @@ public interface VoucherInfoService extends IService<VoucherInfo> {
     List<VoucherInfo> listVoucherInfo(VoucherInfoListRequest voucherInfoListRequest);
 
     Page<VoucherInfoVO> listVoucherInfoByPage(VoucherInfoListByPageRequest voucherInfoListByPageRequest);
+
+    void saveSeckillVoucherInfo(SeckillVoucherInfoAddRequest seckillVoucherInfoAddRequest, HttpServletRequest request);
 }

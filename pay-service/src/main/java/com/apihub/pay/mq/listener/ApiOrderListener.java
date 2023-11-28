@@ -1,7 +1,7 @@
 package com.apihub.pay.mq.listener;
 
-import com.apihub.pay.model.dto.DeductOrderDTO;
 import com.apihub.pay.model.dto.DeductOrderMqDTO;
+import com.apihub.pay.model.dto.order.DeductOrderDTO;
 import com.apihub.pay.service.ApiOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ExchangeTypes;

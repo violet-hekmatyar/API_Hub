@@ -1,14 +1,11 @@
-package com.apihub.voucher.model.dto;
+package com.apihub.voucher.model.dto.voucherinfo;
 
-import com.apihub.common.common.PageRequest;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class VoucherInfoListByPageRequest extends PageRequest implements Serializable {
+public class VoucherInfoListRequest implements Serializable {
     /**
      * 主键
      */
@@ -47,6 +44,8 @@ public class VoucherInfoListByPageRequest extends PageRequest implements Seriali
      * 抵扣下限金额，单位是分。例如200代表2元
      */
     private Long actualValueFloor;
+
+
     /**
      * 0,余额券；1,时段卡
      */

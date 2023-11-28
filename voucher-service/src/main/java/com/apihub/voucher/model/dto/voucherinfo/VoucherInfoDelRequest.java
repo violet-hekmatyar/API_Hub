@@ -1,4 +1,4 @@
-package com.apihub.voucher.model.dto;
+package com.apihub.voucher.model.dto.voucherinfo;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

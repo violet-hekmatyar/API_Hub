@@ -1,4 +1,4 @@
-package com.apihub.voucher.model.dto;
+package com.apihub.voucher.model.dto.voucherinfo;
 
 import lombok.Data;
 
@@ -40,8 +40,9 @@ public class VoucherInfoAddRequest implements Serializable {
      * 提供者id
      */
     private Long issuerId;
+
     /**
-     * 兑换码
+     * 时段卡生效时间
      */
-    private String activationCode;
+    private String validTime = null;
 }
