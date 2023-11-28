@@ -65,7 +65,7 @@ public class VoucherUseController {
         }
 
         //查询优惠券是否可用
-        if (!Objects.equals(voucherOrder.getPayType(), ORDER_STATUS_PAID)) {
+        if (!Objects.equals(voucherOrder.getStatus(), ORDER_STATUS_PAID)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单未支付");
         }
 

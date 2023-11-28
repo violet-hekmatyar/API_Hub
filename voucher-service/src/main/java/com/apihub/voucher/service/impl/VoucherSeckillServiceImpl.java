@@ -9,7 +9,7 @@ import com.apihub.voucher.model.dto.seckillinfo.SeckillVoucherInfoUpdateRequest;
 import com.apihub.voucher.model.dto.voucherinfo.VoucherInfoDelRequest;
 import com.apihub.voucher.model.entity.VoucherSeckill;
 import com.apihub.voucher.model.vo.VoucherSeckillVO;
-import com.apihub.voucher.openFeign.client.VoucherInfoClient;
+import com.apihub.voucher.openFeign.client.UserServiceClient;
 import com.apihub.voucher.service.VoucherSeckillService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -29,12 +29,12 @@ import java.util.List;
 public class VoucherSeckillServiceImpl extends ServiceImpl<VoucherSeckillMapper, VoucherSeckill>
         implements VoucherSeckillService {
 
-    private final VoucherInfoClient voucherInfoClient;
+    private final UserServiceClient userServiceClient;
 
     @Override
     public void delSeckillVoucherInfo(VoucherInfoDelRequest voucherInfoDelRequest) {
         //删除秒杀信息
-        if (!voucherInfoClient.checkAdmin()) {
+        if (!userServiceClient.checkAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         Long id = voucherInfoDelRequest.getId();
@@ -52,7 +52,7 @@ public class VoucherSeckillServiceImpl extends ServiceImpl<VoucherSeckillMapper,
     @Override
     public void updateSeckillVoucherInfo(SeckillVoucherInfoUpdateRequest seckillVoucherInfoUpdateRequest) {
         //只有管理员才能添加
-        if (!voucherInfoClient.checkAdmin()) {
+        if (!userServiceClient.checkAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         VoucherSeckill updateVoucherInfo = new VoucherSeckill();

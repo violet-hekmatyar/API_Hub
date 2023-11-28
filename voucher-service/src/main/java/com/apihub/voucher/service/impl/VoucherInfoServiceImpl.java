@@ -11,7 +11,7 @@ import com.apihub.voucher.model.entity.VoucherInfo;
 import com.apihub.voucher.model.entity.VoucherSeckill;
 import com.apihub.voucher.model.otherInfo.VoucherInfoOtherInfo;
 import com.apihub.voucher.model.vo.VoucherInfoVO;
-import com.apihub.voucher.openFeign.client.VoucherInfoClient;
+import com.apihub.voucher.openFeign.client.UserServiceClient;
 import com.apihub.voucher.service.VoucherInfoService;
 import com.apihub.voucher.service.VoucherSeckillService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -39,7 +39,7 @@ import static com.apihub.voucher.utils.VoucherInfoConstant.*;
 @RequiredArgsConstructor
 public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, VoucherInfo>
         implements VoucherInfoService {
-    private final VoucherInfoClient voucherInfoClient;
+    private final UserServiceClient userServiceClient;
 
     @Resource
     private VoucherSeckillService voucherSeckillService;
@@ -83,7 +83,7 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
 
 
         //只有管理员才能添加
-        if (!voucherInfoClient.checkAdmin()) {
+        if (!userServiceClient.checkAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         VoucherInfo voucherInfoSave = new VoucherInfo();
@@ -163,7 +163,7 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
     @Override
     public void delVoucherInfo(VoucherInfoDelRequest voucherInfoDelRequest) {
         //只有管理员才能删除
-        if (!voucherInfoClient.checkAdmin()) {
+        if (!userServiceClient.checkAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         Long id = voucherInfoDelRequest.getId();
@@ -188,7 +188,7 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
     @Override
     public void updateVoucherInfo(VoucherInfoUpdateRequest voucherInfoUpdateRequest) {
         //只有管理员才能添加
-        if (!voucherInfoClient.checkAdmin()) {
+        if (!userServiceClient.checkAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         VoucherInfo updateVoucherInfo = new VoucherInfo();
@@ -201,7 +201,7 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
 
     @Override
     public List<VoucherInfo> listVoucherInfo(VoucherInfoListRequest voucherInfoListRequest) {
-        if (!voucherInfoClient.checkAdmin()) {
+        if (!userServiceClient.checkAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         VoucherInfo voucherInfoQuery = new VoucherInfo();

@@ -6,10 +6,10 @@ import com.apihub.common.common.ErrorCode;
 import com.apihub.common.common.ResultUtils;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
-import com.apihub.pay.model.dto.ApiOrderQueryRequest;
-import com.apihub.pay.model.dto.DeductOrderDTO;
+import com.apihub.pay.model.dto.order.ApiOrderQueryRequest;
+import com.apihub.pay.model.dto.order.DeductOrderDTO;
 import com.apihub.pay.model.vo.ApiOrderVO;
-import com.apihub.pay.openFeign.client.PayServiceClient;
+import com.apihub.pay.openFeign.client.UserServiceClient;
 import com.apihub.pay.service.ApiOrderService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -27,7 +27,7 @@ import javax.annotation.Resource;
 @RequiredArgsConstructor
 public class ApiOrderController {
 
-    private final PayServiceClient payServiceClient;
+    private final UserServiceClient userServiceClient;
     @Resource
     private ApiOrderService apiOrderService;
 
@@ -47,7 +47,7 @@ public class ApiOrderController {
     @ApiOperation("管理员-分页搜索api订单")
     @GetMapping("/list/page/admin")
     public BaseResponse<Page<ApiOrderVO>> adminListApiOrderByPage(@RequestBody ApiOrderQueryRequest apiOrderQueryRequest) {
-        if (!payServiceClient.checkAdmin()){
+        if (!userServiceClient.checkAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         return ResultUtils.success(apiOrderService.listPayOrderByPage(apiOrderQueryRequest));

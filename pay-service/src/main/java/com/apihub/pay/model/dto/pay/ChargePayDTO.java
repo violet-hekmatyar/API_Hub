@@ -1,4 +1,4 @@
-package com.apihub.pay.model.dto;
+package com.apihub.pay.model.dto.pay;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

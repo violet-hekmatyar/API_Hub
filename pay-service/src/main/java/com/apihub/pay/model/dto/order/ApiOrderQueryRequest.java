@@ -1,4 +1,4 @@
-package com.apihub.pay.model.dto;
+package com.apihub.pay.model.dto.order;
 
 import com.apihub.common.common.PageRequest;
 import io.swagger.annotations.ApiModel;
