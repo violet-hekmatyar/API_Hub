@@ -30,6 +30,7 @@ import java.util.Objects;
 import static com.apihub.voucher.utils.VoucherInfoConstant.TYPE_INTERFACE;
 import static com.apihub.voucher.utils.VoucherInfoConstant.TYPE_SECKILL_INTERFACE;
 import static com.apihub.voucher.utils.VoucherOrderConstant.ORDER_STATUS_PAID;
+import static com.apihub.voucher.utils.VoucherOrderConstant.ORDER_STATUS_VERIFIED;
 
 @RestController
 @Slf4j
@@ -81,6 +82,14 @@ public class VoucherUseController {
         //签发token
         //token只包含userId
         String token = jwtTool.createToken(UserHolder.getUser(), endTime);
+
+        //更改订单信息
+        voucherOrder.setStatus(ORDER_STATUS_VERIFIED);
+        voucherOrder.setUseTime(beginTime);
+        boolean b = voucherOrderService.updateById(voucherOrder);
+        if (!b) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR);
+        }
 
         //将interfaceId和accessKey包装进去
         ApiTokenVO apiTokenVO = new ApiTokenVO();
