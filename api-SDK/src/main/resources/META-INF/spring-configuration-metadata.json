@@ -1,24 +1,24 @@
 {
   "groups": [
     {
-      "name": "apihub.sdk"
+      "name": "apihub.client"
     }
   ],
   "properties": [
     {
-      "name": "apihub.sdk.ak",
+      "name": "apihub.client.access-key",
       "type": "java.lang.String",
       "description": "用户accessKey"
     },
     {
-      "name": "apihub.sdk.sk",
+      "name": "apihub.client.secret-key",
       "type": "java.lang.String",
       "description": "用户secretKey"
     },
     {
-      "name": "apihub.sdk.token",
+      "name": "apihub.client.api-token",
       "type": "java.lang.String",
-      "description": "用户请求接口token"
+      "description": "自营接口token"
     }
   ],
   "hints": []

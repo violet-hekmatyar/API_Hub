@@ -65,7 +65,7 @@ public class ApiHubIdClient {
                 .addHeaders(getHeaderMap(""))
                 .execute();
         String result = httpResponse.body();
-        System.out.println(httpResponse.getStatus());
+        //System.out.println(httpResponse.getStatus());
         resCheck(httpResponse.getStatus());
 //        System.out.println(result);
         return result;
