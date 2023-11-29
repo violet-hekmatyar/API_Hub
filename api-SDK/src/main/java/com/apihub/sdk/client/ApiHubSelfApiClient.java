@@ -4,6 +4,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.apihub.sdk.exception.ApiException;
 import com.apihub.sdk.exception.ErrorCode;
+import com.apihub.sdk.model.dto.ExecuteCodeRequest;
 import com.apihub.sdk.model.dto.PictureQueryRequest;
 import com.google.gson.Gson;
 
@@ -22,6 +23,20 @@ public class ApiHubSelfApiClient {
         Gson gson = new Gson();
         String json = gson.toJson(pictureQueryRequest);
         HttpResponse httpResponse = HttpRequest.post(SELF_API_HOST + "/picture/list/page/vo")
+                .header("apiToken", token)
+                .body(json)
+                .timeout(5000)
+                .execute();
+
+        resCheck(httpResponse.getStatus());
+        return httpResponse.body();
+    }
+
+    public String OJSandBox(ExecuteCodeRequest executeCodeRequest) throws ApiException {
+        tokenCheck();
+        Gson gson = new Gson();
+        String json = gson.toJson(executeCodeRequest);
+        HttpResponse httpResponse = HttpRequest.post(SELF_API_HOST + "/sandbox/executeCode/java")
                 .header("apiToken", token)
                 .body(json)
                 .timeout(5000)
