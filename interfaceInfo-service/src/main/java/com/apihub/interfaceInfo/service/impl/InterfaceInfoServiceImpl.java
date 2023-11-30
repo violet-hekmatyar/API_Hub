@@ -32,7 +32,7 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String name = interfaceInfo.getName();
-        // 创建时，所有参数必须非空
+        // 接口名字不能为空
         if (b) {
             if (StringUtils.isAnyBlank(name)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -40,6 +40,10 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         }
         if (StringUtils.isNotBlank(name) && name.length() > 50) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "名称过长");
+        }
+        String category = interfaceInfo.getCategory();
+        if (category == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口类别未填写");
         }
     }
 

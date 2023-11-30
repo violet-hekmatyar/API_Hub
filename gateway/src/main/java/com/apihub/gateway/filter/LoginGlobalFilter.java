@@ -4,6 +4,7 @@ import com.apihub.common.utils.CollUtils;
 import com.apihub.gateway.config.AuthProperties;
 import com.apihub.gateway.utils.JwtTool;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -21,6 +22,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @EnableConfigurationProperties(AuthProperties.class)
+@Slf4j
 public class LoginGlobalFilter implements GlobalFilter, Ordered {
 
     private final JwtTool jwtTool;
@@ -53,6 +55,7 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
             userId = jwtTool.parseToken(token);
         } catch (Exception e) {
             // 如果无效，拦截
+            log.warn(e.getMessage());
             ServerHttpResponse response = exchange.getResponse();
             response.setRawStatusCode(401);
             return response.setComplete();

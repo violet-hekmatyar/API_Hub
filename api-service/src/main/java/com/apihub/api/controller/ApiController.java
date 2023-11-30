@@ -22,6 +22,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/apiService")
@@ -84,6 +85,10 @@ public class ApiController {
         if (interfaceInfo.getId() == 0) {
             //System.out.println("id===0---------------------------------------------");
             throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "服务器繁忙，请稍后重试");
+        }
+        //查看是否为第三方接口
+        if (!Objects.equals(interfaceInfo.getCategory(), "0")) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求接口不是第三方接口");
         }
         if (!interfaceInfo.getMethod().contains(method)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求方法错误");

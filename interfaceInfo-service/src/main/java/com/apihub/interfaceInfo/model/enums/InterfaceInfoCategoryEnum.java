@@ -5,21 +5,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 帖子性别枚举
- *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
+ * 接口信息状态枚举
  */
-public enum PostGenderEnum {
+public enum InterfaceInfoCategoryEnum {
 
-    MALE("男", 0),
-    FEMALE("女", 1);
+    THIRD_PARTY_API("第三方接口", 0),
+    SELF_API("自营接口", 1);
 
     private final String text;
 
     private final int value;
 
-    PostGenderEnum(String text, int value) {
+    InterfaceInfoCategoryEnum(String text, int value) {
         this.text = text;
         this.value = value;
     }
