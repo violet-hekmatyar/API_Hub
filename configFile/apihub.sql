@@ -4,7 +4,7 @@
  Source Server         : 华为云
  Source Server Type    : MySQL
  Source Server Version : 80100
- Source Host           : 116.204.109.230:3306
+ Source Host           : 8.130.35.69:3306
  Source Schema         : apihub
 
  Target Server Type    : MySQL

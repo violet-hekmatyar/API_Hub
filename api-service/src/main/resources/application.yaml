@@ -14,11 +14,11 @@ spring:
       transport:
         dashboard: localhost:8090
       http-method-specify: true
-#      server-addr: 116.204.109.230:8848 # nacos地址
+#      server-addr: 8.130.35.69:8848 # nacos地址
 #      username: nacos
 #      password: Jimmy@2333
   rabbitmq:
-    host: 116.204.109.230
+    host: 8.130.35.69
     port: 5672
     virtual-host: /apiHub
     username: hekmatyar
