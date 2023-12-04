@@ -111,6 +111,10 @@ public class VoucherInfoServiceImpl extends ServiceImpl<VoucherInfoMapper, Vouch
         if (!save) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR);
         }
+
+        //todo 可以通过返回id来简化操作,而不是通过优惠券兑换码
+        //todo 支持优惠券兑换码自定义，同时检查优惠券兑换码是否唯一
+        //return voucherInfoSave.getId();
         return voucherInfoSave.getActivationCode();
     }
 
