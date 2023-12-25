@@ -3,10 +3,12 @@ server:
   servlet:
     context-path: /api
 spring:
-#  application:
-#    name: gateway-service
-#  profiles:
-#    active: dev
+  main:
+    allow-bean-definition-overriding: true
+  #  application:
+  #    name: gateway-service
+  #  profiles:
+  #    active: dev
   redis:
     database: 6
     host: 8.130.35.69
