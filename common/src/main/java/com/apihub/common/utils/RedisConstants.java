@@ -8,6 +8,10 @@ public class RedisConstants {
 
     public static final String API_ACCESS_KEY = "ak:hekmatyar:";
 
+    public static final String USER_BALANCE_KEY = "ak:balance:";
+
+    public static final String USER_INVOKE_KEY = "ak:apiInvoke:";
+
     public static final Long CACHE_NULL_TTL = 2L;
 
     public static final Long CACHE_SHOP_TTL = 30L;

@@ -11,6 +11,7 @@ import com.apihub.user.config.JwtProperties;
 import com.apihub.user.mapper.UserMapper;
 import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
+import com.apihub.user.model.entity.UserBalancePayment;
 import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
@@ -20,6 +21,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -42,6 +44,7 @@ import static com.apihub.user.utils.UserConstant.MD5_SALT;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@EnableConfigurationProperties(JwtProperties.class)
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 
@@ -51,6 +54,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Resource
+    private UserBalancePaymentServiceImpl userBalancePaymentService;
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
         // 1. 校验
@@ -67,6 +72,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (!userPassword.equals(checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
         }
+
+
         synchronized (userAccount.intern()) {
             // 账户不能重复
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -80,6 +87,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             // 3. 分配 accessKey, secretKey
             String accessKey = DigestUtil.md5Hex(MD5_SALT + userAccount + RandomUtil.randomNumbers(5));
             String secretKey = DigestUtil.md5Hex(MD5_SALT + userAccount + RandomUtil.randomNumbers(8));
+
             // 4. 插入数据
             User user = new User();
             user.setUserAccount(userAccount);
@@ -113,6 +121,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userAccount", userAccount);
         queryWrapper.eq("userPassword", encryptPassword);
         User user = userMapper.selectOne(queryWrapper);
+
         // 用户不存在
         if (user == null) {
             log.info("用户不存在或密码错误");
@@ -139,29 +148,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //        user.setSecretKey(sign);
 
         //todo 把用户余额信息也存储到redis中
-        // 7.保存所有用户信息到 redis中
+        //7.保存所有用户信息到 redis中
         Map<String, Object> userMap = BeanUtil.beanToMap(user, new HashMap<>(),
                 CopyOptions.create()
                         .setIgnoreNullValue(true)
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue != null ? fieldValue.toString() : ""));
 
+        // todo 这里应该是，发请求的时候
         String key = LOGIN_USER_KEY + user.getId();
         //以userId为key存一份
         stringRedisTemplate.opsForHash().putAll(key, userMap);
         // 7.4.设置token有效期
         stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
-        //以AK为key存一份
+        //以AK为key存一份(两个作用，存在的话就是刷新有效期，不存在的话就是补充)
         HashMap<String, Object> userAkInfo = new HashMap<>();
         userAkInfo.put("id",String.valueOf(user.getId()));
         userAkInfo.put("secretKey",user.getSecretKey());
-
         stringRedisTemplate.opsForHash().putAll(API_ACCESS_KEY + accessKey, userAkInfo);
+
+
+
+        // 保存用户余额
+        String blcKey = USER_BALANCE_KEY + user.getId();
+
+        // 查询balance数据库(UserBalancePaymentServiceImpl有getBalance函数，但是是通过UserHolder获取用户id的)
+        // 网关没有拦截，也就没有传递user-id，此时UserHolder里面就没有user-id
+        QueryWrapper<UserBalancePayment> balanceQuery = new QueryWrapper<>();
+        balanceQuery.eq("userId", user.getId());
+        UserBalancePayment balanceInfo = userBalancePaymentService.getOne(balanceQuery);
+
+
+        stringRedisTemplate.opsForValue().set(blcKey , String.valueOf(balanceInfo.getBalance()));
+
+
         //Todo 可将此时间设置长一些
         stringRedisTemplate.expire(API_ACCESS_KEY + accessKey,LOGIN_USER_TTL,TimeUnit.MINUTES);
 
+        // 用户余额的TTL设置成和登录一样，因为用户仅在登陆期间才能看到余额
+        stringRedisTemplate.expire(blcKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
+
+
         // 返回token+user信息
         userLoginVo.setToken(token);
+
         return userLoginVo;
     }
 
@@ -230,7 +260,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         String tokenKey = LOGIN_USER_KEY + userId;
 
-        //
         Map<Object, Object> userMap;
         userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
         if (userMap.isEmpty()) {
