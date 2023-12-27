@@ -76,7 +76,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
 
-        synchronized (userAccount.intern()) {
+        // 使用分布式锁防止并发注册
+        Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(REGISTER_LOCK_KEY + userAccount, "locked");
+
+        // 如果加锁失败，说明正在注册中，直接返回，不走try里面的逻辑
+        if(!flag)
+        {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "系统繁忙中，请稍后重试");
+        }
+        try {
             // 账户不能重复
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("userAccount", userAccount);
@@ -101,7 +109,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
             }
             return user.getId();
+        } finally {
+            //释放锁
+            stringRedisTemplate.delete(REGISTER_LOCK_KEY + userAccount);
         }
+
     }
 
     private final JwtTool jwtTool;
