@@ -9,6 +9,7 @@ import com.apihub.common.exception.BusinessException;
 import com.apihub.user.annotation.AuthCheck;
 import com.apihub.user.model.dto.*;
 import com.apihub.user.model.entity.User;
+import com.apihub.user.model.vo.UserKeyPairVO;
 import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
@@ -66,6 +67,23 @@ public class userController {
         return ResultUtils.success(userLoginVo);
     }
 
+    @ApiOperation("更换ak/sk")
+    @PostMapping("/changeKeyPair")
+    public BaseResponse<UserKeyPairVO> changeKeyPair(@RequestBody LoginFormDTO loginFormDTO)
+    {
+        if (loginFormDTO == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 获取用户填写的密码，检验是否为空
+        String userPassword = loginFormDTO.getUserPassword();
+        if (StringUtils.isAnyBlank(userPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        UserKeyPairVO keyPairVO = userService.changeKeyPair(loginFormDTO);
+
+        return ResultUtils.success(keyPairVO);
+    }
     @ApiOperation("获取当前登录用户")
     @GetMapping("/get/login")
     public BaseResponse<UserVO> getLoginUser(HttpServletRequest request) {
@@ -76,7 +94,6 @@ public class userController {
         }
         return ResultUtils.success(user);
     }
-
     @ApiOperation("添加用户")
     @PostMapping("/add")
     @AuthCheck(mustRole = ADMIN_ROLE)

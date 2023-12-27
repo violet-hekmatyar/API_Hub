@@ -12,11 +12,13 @@ import com.apihub.user.mapper.UserMapper;
 import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
 import com.apihub.user.model.entity.UserBalancePayment;
+import com.apihub.user.model.vo.UserKeyPairVO;
 import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
 import com.apihub.user.utils.JwtTool;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -271,5 +273,48 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
         return Objects.equals(sign, stringRedisTemplate.opsForValue().get(API_ACCESS_KEY + accessKey));
+    }
+
+    @Override
+    public UserKeyPairVO changeKeyPair(LoginFormDTO loginFormDTO) {
+        if(loginFormDTO == null || StringUtils.isBlank(loginFormDTO.getUserPassword()) )
+        {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数有误");
+        }
+
+        // 获取当前登录用户信息(拿到userAccount)
+//        UserVO loginUser = getLoginUser();
+
+//        String userAccount = loginUser.getUserAccount();
+        String userAccount = "root";
+        String userPassword = loginFormDTO.getUserPassword();
+        // 加密
+        String encryptPassword = DigestUtils.md5DigestAsHex((MD5_SALT + userPassword).getBytes());
+
+        // 生成一份新的ak/sk
+        String accessKey = DigestUtil.md5Hex(MD5_SALT + userAccount + RandomUtil.randomNumbers(5));
+        String secretKey = DigestUtil.md5Hex(MD5_SALT + userAccount + RandomUtil.randomNumbers(8));
+
+
+        //  update user
+        //  set accessKey = ?  and secretKey = ?
+        //  where  userAccount = ?  and userPassword = ?
+        UpdateWrapper<User> wrapper = new UpdateWrapper<>();
+        wrapper.eq("userAccount", userAccount);
+        wrapper.eq("userPassword", encryptPassword);
+        wrapper.set("accessKey", accessKey);
+        wrapper.set("secretKey",secretKey);
+
+        boolean update = this.update(wrapper);
+        if(!update)
+        {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
+        }
+
+        UserKeyPairVO keyPairVO = new UserKeyPairVO();
+        keyPairVO.setSecreteKey(secretKey);
+        keyPairVO.setAccessKey(accessKey);
+
+        return keyPairVO;
     }
 }

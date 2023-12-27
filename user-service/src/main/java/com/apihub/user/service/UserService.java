@@ -2,6 +2,7 @@ package com.apihub.user.service;
 
 import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
+import com.apihub.user.model.vo.UserKeyPairVO;
 import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -20,4 +21,6 @@ public interface UserService extends IService<User> {
     UserVO getLoginUser();
 
     Boolean checkUserAK(String accessKey, String sign);
+
+    UserKeyPairVO changeKeyPair(LoginFormDTO loginFormDTO);
 }
