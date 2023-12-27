@@ -21,6 +21,18 @@ spring:
         min-idle: 1
         time-between-eviction-runs: 10s
     password: Jimmy@2333
+  cloud:
+    gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true # 解决options请求被拦截问题
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*" # 允许那些网站跨域访问
+            allowedMethods: "*" # 允许那些Ajax方式的跨域请求
+            allowedHeaders: "*" # 允许请求头携带信息
+            allowCredentials: true # 允许携带cookie
+            maxAge: 360000 # 这次跨域有效期于相同的跨域请求不会再预检
+
 #  cloud:
 #    nacos:
 #      server-addr: 127.0.0.1:8848
