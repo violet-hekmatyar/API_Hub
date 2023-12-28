@@ -11,15 +11,19 @@ import com.apihub.user.config.JwtProperties;
 import com.apihub.user.mapper.UserMapper;
 import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
+import com.apihub.user.model.entity.UserBalancePayment;
+import com.apihub.user.model.vo.UserKeyPairVO;
 import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
 import com.apihub.user.utils.JwtTool;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -42,6 +46,7 @@ import static com.apihub.user.utils.UserConstant.MD5_SALT;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@EnableConfigurationProperties(JwtProperties.class)
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 
@@ -51,6 +56,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Resource
+    private UserBalancePaymentServiceImpl userBalancePaymentService;
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
         // 1. 校验
@@ -67,7 +74,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (!userPassword.equals(checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
         }
-        synchronized (userAccount.intern()) {
+
+
+        // 使用分布式锁防止并发注册
+        Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(REGISTER_LOCK_KEY + userAccount, "locked");
+
+        // 如果加锁失败，说明正在注册中，直接返回，不走try里面的逻辑
+        if(!flag)
+        {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "系统繁忙中，请稍后重试");
+        }
+        try {
             // 账户不能重复
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("userAccount", userAccount);
@@ -80,6 +97,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             // 3. 分配 accessKey, secretKey
             String accessKey = DigestUtil.md5Hex(MD5_SALT + userAccount + RandomUtil.randomNumbers(5));
             String secretKey = DigestUtil.md5Hex(MD5_SALT + userAccount + RandomUtil.randomNumbers(8));
+
             // 4. 插入数据
             User user = new User();
             user.setUserAccount(userAccount);
@@ -91,7 +109,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
             }
             return user.getId();
+        } finally {
+            //释放锁
+            stringRedisTemplate.delete(REGISTER_LOCK_KEY + userAccount);
         }
+
     }
 
     private final JwtTool jwtTool;
@@ -113,6 +135,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userAccount", userAccount);
         queryWrapper.eq("userPassword", encryptPassword);
         User user = userMapper.selectOne(queryWrapper);
+
         // 用户不存在
         if (user == null) {
             log.info("用户不存在或密码错误");
@@ -138,30 +161,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //        sign = md5.digestHex(sign);
 //        user.setSecretKey(sign);
 
-        //todo 把用户余额信息也存储到redis中
-        // 7.保存所有用户信息到 redis中
+        //7.保存所有用户信息到 redis中
         Map<String, Object> userMap = BeanUtil.beanToMap(user, new HashMap<>(),
                 CopyOptions.create()
                         .setIgnoreNullValue(true)
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue != null ? fieldValue.toString() : ""));
 
+        // todo 这里应该是，发请求的时候
         String key = LOGIN_USER_KEY + user.getId();
         //以userId为key存一份
         stringRedisTemplate.opsForHash().putAll(key, userMap);
         // 7.4.设置token有效期
         stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
-        //以AK为key存一份
+        //以AK为key存一份(两个作用，存在的话就是刷新有效期，不存在的话就是补充)
         HashMap<String, Object> userAkInfo = new HashMap<>();
         userAkInfo.put("id",String.valueOf(user.getId()));
         userAkInfo.put("secretKey",user.getSecretKey());
-
         stringRedisTemplate.opsForHash().putAll(API_ACCESS_KEY + accessKey, userAkInfo);
+
+
+
+        // 保存用户余额
+        String blcKey = USER_BALANCE_KEY + user.getId();
+
+        // 查询balance数据库(UserBalancePaymentServiceImpl有getBalance函数，但是是通过UserHolder获取用户id的)
+        // 网关没有拦截，也就没有传递user-id，此时UserHolder里面就没有user-id
+        QueryWrapper<UserBalancePayment> balanceQuery = new QueryWrapper<>();
+        balanceQuery.eq("userId", user.getId());
+        UserBalancePayment balanceInfo = userBalancePaymentService.getOne(balanceQuery);
+
+
+        stringRedisTemplate.opsForValue().set(blcKey , String.valueOf(balanceInfo.getBalance()));
+
+
         //Todo 可将此时间设置长一些
         stringRedisTemplate.expire(API_ACCESS_KEY + accessKey,LOGIN_USER_TTL,TimeUnit.MINUTES);
 
+        // 用户余额的TTL设置成26h
+        stringRedisTemplate.expire(blcKey, USER_BALANCE_TTL, TimeUnit.HOURS);
+
+
         // 返回token+user信息
         userLoginVo.setToken(token);
+
         return userLoginVo;
     }
 
@@ -230,7 +273,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         String tokenKey = LOGIN_USER_KEY + userId;
 
-        //
         Map<Object, Object> userMap;
         userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
         if (userMap.isEmpty()) {
@@ -242,5 +284,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
         return Objects.equals(sign, stringRedisTemplate.opsForValue().get(API_ACCESS_KEY + accessKey));
+    }
+
+    @Override
+    public UserKeyPairVO changeKeyPair(LoginFormDTO loginFormDTO) {
+        if(loginFormDTO == null || StringUtils.isBlank(loginFormDTO.getUserPassword()) )
+        {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数有误");
+        }
+
+        // 获取当前登录用户信息(拿到userAccount)
+        UserVO loginUser = getLoginUser();
+
+        String userAccount = loginUser.getUserAccount();
+
+        // 方便测试使用
+        //String userAccount = "root";
+        String userPassword = loginFormDTO.getUserPassword();
+        // 加密
+        String encryptPassword = DigestUtils.md5DigestAsHex((MD5_SALT + userPassword).getBytes());
+
+        // 生成一份新的ak/sk
+        String accessKey = DigestUtil.md5Hex(MD5_SALT + userAccount + RandomUtil.randomNumbers(5));
+        String secretKey = DigestUtil.md5Hex(MD5_SALT + userAccount + RandomUtil.randomNumbers(8));
+
+
+        //  update user
+        //  set accessKey = ?  and secretKey = ?
+        //  where  userAccount = ?  and userPassword = ?
+        UpdateWrapper<User> wrapper = new UpdateWrapper<>();
+        wrapper.eq("userAccount", userAccount);
+        wrapper.eq("userPassword", encryptPassword);
+        wrapper.set("accessKey", accessKey);
+        wrapper.set("secretKey",secretKey);
+
+        boolean update = this.update(wrapper);
+        if(!update)
+        {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
+        }
+
+        UserKeyPairVO keyPairVO = new UserKeyPairVO();
+        keyPairVO.setSecreteKey(secretKey);
+        keyPairVO.setAccessKey(accessKey);
+
+        return keyPairVO;
     }
 }

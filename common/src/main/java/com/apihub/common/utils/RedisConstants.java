@@ -6,7 +6,21 @@ public class RedisConstants {
     public static final String LOGIN_USER_KEY = "login:token:hekmatyar:";
     public static final Long LOGIN_USER_TTL = 36000L;
 
+    // 以用户账号为粒度的分布式锁
+    public static final String REGISTER_LOCK_KEY = "register:lock:";
+
     public static final String API_ACCESS_KEY = "ak:hekmatyar:";
+
+    public static final String USER_BALANCE_KEY = "ak:balance:";
+
+    public static final String USER_INVOKE_KEY = "ak:apiInvoke:";
+
+    //接口详细信息
+    public static final String INTERFACEINFO_DETAIL_KEY = "interfaceInfo:detail:";
+    //接口请求方法
+    public static final String INTERFACEINFO_METHOD_KEY = "interfaceInfo:method:";
+
+    public static final Long USER_BALANCE_TTL = 26L;
 
     public static final Long CACHE_NULL_TTL = 2L;
 
