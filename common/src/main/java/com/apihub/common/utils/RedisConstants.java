@@ -15,6 +15,13 @@ public class RedisConstants {
 
     public static final String USER_INVOKE_KEY = "ak:apiInvoke:";
 
+    //接口详细信息
+    public static final String INTERFACEINFO_DETAIL_KEY = "interfaceInfo:detail:";
+    //接口请求方法
+    public static final String INTERFACEINFO_METHOD_KEY = "interfaceInfo:method:";
+
+    public static final Long USER_BALANCE_TTL = 26L;
+
     public static final Long CACHE_NULL_TTL = 2L;
 
     public static final Long CACHE_SHOP_TTL = 30L;

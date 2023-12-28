@@ -161,7 +161,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //        sign = md5.digestHex(sign);
 //        user.setSecretKey(sign);
 
-        //todo 把用户余额信息也存储到redis中
         //7.保存所有用户信息到 redis中
         Map<String, Object> userMap = BeanUtil.beanToMap(user, new HashMap<>(),
                 CopyOptions.create()
@@ -199,8 +198,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //Todo 可将此时间设置长一些
         stringRedisTemplate.expire(API_ACCESS_KEY + accessKey,LOGIN_USER_TTL,TimeUnit.MINUTES);
 
-        // 用户余额的TTL设置成和登录一样，因为用户仅在登陆期间才能看到余额
-        stringRedisTemplate.expire(blcKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
+        // 用户余额的TTL设置成26h
+        stringRedisTemplate.expire(blcKey, USER_BALANCE_TTL, TimeUnit.HOURS);
 
 
         // 返回token+user信息
@@ -295,10 +294,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         // 获取当前登录用户信息(拿到userAccount)
-//        UserVO loginUser = getLoginUser();
+        UserVO loginUser = getLoginUser();
 
-//        String userAccount = loginUser.getUserAccount();
-        String userAccount = "root";
+        String userAccount = loginUser.getUserAccount();
+
+        // 方便测试使用
+        //String userAccount = "root";
         String userPassword = loginFormDTO.getUserPassword();
         // 加密
         String encryptPassword = DigestUtils.md5DigestAsHex((MD5_SALT + userPassword).getBytes());
