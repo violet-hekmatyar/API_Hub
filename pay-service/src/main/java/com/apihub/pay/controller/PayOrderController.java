@@ -6,8 +6,6 @@ import com.apihub.common.common.ErrorCode;
 import com.apihub.common.common.ResultUtils;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
-import com.apihub.pay.model.dto.APIDeduct;
-import com.apihub.pay.model.dto.ChargePayDTO;
 import com.apihub.pay.model.dto.PayOrderQueryRequest;
 import com.apihub.pay.model.vo.PayOrderVO;
 import com.apihub.pay.openFeign.client.UserServiceClient;
@@ -17,10 +15,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 @Api(tags = "支付单接口")
 @RestController
@@ -32,27 +32,6 @@ public class PayOrderController {
     private final UserServiceClient userServiceClient;
     @Resource
     private PayOrderService payOrderService;
-
-    @ApiOperation("充值支付单")
-    @PostMapping("/charge")
-    public BaseResponse<Boolean> chargePayOrder(@RequestBody ChargePayDTO chargePayDTO) {
-        if (chargePayDTO.getAmount() == null || chargePayDTO.getAmount() < 1) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "充值数额不合法");
-        }
-        payOrderService.chargePayOrder(chargePayDTO);
-
-        return ResultUtils.success(true);
-    }
-
-    @ApiOperation("api调用扣减余额")
-    @PostMapping("/deduct/balance")
-    public BaseResponse<Boolean> APIDeductByBalance(@RequestBody APIDeduct APIDeduct, HttpServletRequest request) {
-        payOrderService.apiDeductByBalance(APIDeduct, request);
-        return ResultUtils.success(true);
-    }
-
-
-    //不支持手动创建支付单
 
     //查询今天的api调用情况
 

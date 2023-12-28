@@ -22,15 +22,18 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.apihub.pay.model.enums.PayType.BALANCE_VOUCHER_PAY;
+import static com.apihub.pay.utils.ApiDeductConstants.API_DEDUCT_BALANCE_KEY;
+import static com.apihub.pay.utils.ApiDeductConstants.API_DEDUCT_TTL;
 
 /**
  * @author IKUN
@@ -44,6 +47,9 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder>
         implements PayOrderService {
 
     private final UserServiceClient userServiceClient;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     //todo 完善充值等待
     //目前是直接充值，等有第三方支付后再完善
@@ -143,16 +149,47 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder>
 
     @Override
     public void apiDeductByBalance(APIDeduct apiDeduct, HttpServletRequest request) {
+        //数据检查
+        if (apiDeduct.getInterfaceId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口id为空");
+        }
+        if (apiDeduct.getNum() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口id使用次数为空");
+        }
+        if (apiDeduct.getTotalFee() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "总费用为空");
+        }
+        String interfaceInfoIdStr = apiDeduct.getInterfaceId().toString();
+        String apiNumStr = apiDeduct.getNum().toString();
+
         //查询redis中 用户调用次数
+        String apiCountKey = API_DEDUCT_BALANCE_KEY + UserHolder.getUser();
+        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(apiCountKey);
 
-        //没查询到，将MySQL中的数据加载到redis中
-        //key---apiDeductCount:{userId}
+        //没查询到,新建
+        if (entries.isEmpty()) {
+            Map<String, String> apiCount = new HashMap<>();
+            apiCount.put(interfaceInfoIdStr, apiNumStr);
+            stringRedisTemplate.opsForHash().putAll(apiCountKey, apiCount);
+            stringRedisTemplate.expire(apiCountKey, API_DEDUCT_TTL, TimeUnit.HOURS);
+            return;
+        }
 
-        //修改redis
-        //数据有效期为24h
+        //查询map中是否存在interfaceInfoId
+        String interfaceCountString = (String) entries.get(interfaceInfoIdStr);
+        //不存在,新增,并存储到redis中
+        if (interfaceCountString == null) {
+            stringRedisTemplate.opsForHash().put(
+                    apiCountKey, interfaceInfoIdStr, apiNumStr);
+            return;
+        }
 
+        Long interfaceCount = Long.valueOf(interfaceCountString);
+        //存在，增加次数并更新到redis中
+        interfaceCount += apiDeduct.getNum();
+        entries.put(interfaceInfoIdStr, interfaceCount.toString());
+        stringRedisTemplate.opsForHash().putAll(apiCountKey, entries);
     }
-
 }
 
 
