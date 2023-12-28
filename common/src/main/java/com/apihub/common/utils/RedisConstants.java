@@ -13,7 +13,7 @@ public class RedisConstants {
 
     public static final String USER_BALANCE_KEY = "ak:balance:";
 
-    public static final String USER_INVOKE_KEY = "ak:apiInvoke:";
+    public static final String API_INVOKE_KEY = "ak:apiInvoke:";
 
     //接口详细信息
     public static final String INTERFACEINFO_DETAIL_KEY = "interfaceInfo:detail:";

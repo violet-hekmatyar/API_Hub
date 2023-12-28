@@ -19,10 +19,16 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+
+import static com.apihub.common.utils.RedisConstants.*;
 
 @RestController
 @RequestMapping("/apiService")
@@ -34,6 +40,9 @@ public class ApiController {
 
     private final RabbitTemplate rabbitTemplate;
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
     //todo 需要开启全局事务
     @ApiOperation("get请求接口")
     @GetMapping("/get")
@@ -41,7 +50,7 @@ public class ApiController {
                                                      @RequestParam("body") String body,
                                                      HttpServletRequest request) {
         //查询接口url及其他信息
-        InterfaceInfo interfaceInfo = interfaceInfoServiceClient.queryItemById(interfaceId);
+         InterfaceInfo interfaceInfo = interfaceInfoServiceClient.queryItemById(interfaceId);
 
         checkInfoAndDeduct(interfaceInfo, "get");
 
@@ -56,6 +65,7 @@ public class ApiController {
         return ResultUtils.success(httpResponse.body());
     }
 
+
     @ApiOperation("post请求接口")
     @PostMapping("/post")
     public BaseResponse<Object> postInterfaceInfoById(@RequestParam("InterfaceId") long interfaceId,
@@ -63,9 +73,7 @@ public class ApiController {
                                                       HttpServletRequest request) {
         //查询接口url及其他信息
         InterfaceInfo interfaceInfo = interfaceInfoServiceClient.queryItemById(interfaceId);
-
         checkInfoAndDeduct(interfaceInfo, "post");
-
         //向url发请求
         String requestBody = URLUtil.decode(body, CharsetUtil.CHARSET_UTF_8);
         HttpResponse httpResponse = HttpRequest.post(interfaceInfo.getUrl() + "?" + requestBody)
@@ -90,6 +98,7 @@ public class ApiController {
         if (!Objects.equals(interfaceInfo.getCategory(), "0")) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求接口不是第三方接口");
         }
+        // 利用字符串查找子串的方式判断方法是否存在
         if (!interfaceInfo.getMethod().contains(method)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求方法错误");
         }
@@ -99,6 +108,8 @@ public class ApiController {
             //如果不够次数，直接返回结果
             throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "用户余额不足");
         }
+        // 扣款成功,接口调用次数 + 1
+        stringRedisTemplate.opsForValue().increment(API_INVOKE_KEY + interfaceInfo.getId(), 1L);
     }
 
     private void sendMQ(InterfaceInfo interfaceInfo, HttpServletRequest request) {
