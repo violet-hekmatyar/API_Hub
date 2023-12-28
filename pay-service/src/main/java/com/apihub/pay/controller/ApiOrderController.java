@@ -6,8 +6,8 @@ import com.apihub.common.common.ErrorCode;
 import com.apihub.common.common.ResultUtils;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
+import com.apihub.pay.model.dto.APIDeduct;
 import com.apihub.pay.model.dto.order.ApiOrderQueryRequest;
-import com.apihub.pay.model.dto.order.DeductOrderDTO;
 import com.apihub.pay.model.vo.ApiOrderVO;
 import com.apihub.pay.openFeign.client.UserServiceClient;
 import com.apihub.pay.service.ApiOrderService;
@@ -16,14 +16,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Resource;
 
 @Api(tags = "订单接口")
-@RestController
 @Slf4j
-@RequestMapping("/order")
+//@RestController
+//@RequestMapping("/order")
 @RequiredArgsConstructor
 public class ApiOrderController {
 
@@ -33,8 +35,8 @@ public class ApiOrderController {
 
     @ApiOperation("支付订单")
     @PostMapping("/deduct")
-    public Boolean deductOrder(@RequestBody DeductOrderDTO deductOrderDTO){
-        return apiOrderService.deductOrder(deductOrderDTO,UserHolder.getUser());
+    public Boolean deductOrder(@RequestBody APIDeduct APIDeduct) {
+        return apiOrderService.deductOrder(APIDeduct, UserHolder.getUser());
     }
 
     @ApiOperation("分页搜索api订单")
@@ -53,3 +55,9 @@ public class ApiOrderController {
         return ResultUtils.success(apiOrderService.listPayOrderByPage(apiOrderQueryRequest));
     }
 }
+
+
+
+
+
+

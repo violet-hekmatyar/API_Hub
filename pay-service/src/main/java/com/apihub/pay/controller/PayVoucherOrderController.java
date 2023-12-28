@@ -1,7 +1,7 @@
 package com.apihub.pay.controller;
 
 
-import com.apihub.pay.model.dto.pay.payvoucherorder.VoucherBalancePayDTO;
+import com.apihub.pay.model.dto.payvoucherorder.VoucherBalancePayDTO;
 import com.apihub.pay.service.PayOrderService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

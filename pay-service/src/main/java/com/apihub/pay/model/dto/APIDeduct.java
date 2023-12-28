@@ -1,12 +1,12 @@
-package com.apihub.pay.model.dto.order;
+package com.apihub.pay.model.dto;
 
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 @Data
-@ApiModel(description = "服务调用订单实体")
-public class DeductOrderDTO {
+@ApiModel(description = "API服务调用-余额扣减实体")
+public class APIDeduct {
 
     /**
      * 总金额，单位为分

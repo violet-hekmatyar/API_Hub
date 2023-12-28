@@ -1,4 +1,4 @@
-package com.apihub.pay.model.dto.pay.payvoucherorder;
+package com.apihub.pay.model.dto.payvoucherorder;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

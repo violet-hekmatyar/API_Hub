@@ -6,8 +6,9 @@ import com.apihub.common.common.ErrorCode;
 import com.apihub.common.common.ResultUtils;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
-import com.apihub.pay.model.dto.pay.ChargePayDTO;
-import com.apihub.pay.model.dto.pay.PayOrderQueryRequest;
+import com.apihub.pay.model.dto.APIDeduct;
+import com.apihub.pay.model.dto.ChargePayDTO;
+import com.apihub.pay.model.dto.PayOrderQueryRequest;
 import com.apihub.pay.model.vo.PayOrderVO;
 import com.apihub.pay.openFeign.client.UserServiceClient;
 import com.apihub.pay.service.PayOrderService;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 @Api(tags = "支付单接口")
 @RestController
@@ -42,10 +44,21 @@ public class PayOrderController {
         return ResultUtils.success(true);
     }
 
+    @ApiOperation("api调用扣减余额")
+    @PostMapping("/deduct/balance")
+    public BaseResponse<Boolean> APIDeductByBalance(@RequestBody APIDeduct APIDeduct, HttpServletRequest request) {
+        payOrderService.apiDeductByBalance(APIDeduct, request);
+        return ResultUtils.success(true);
+    }
+
 
     //不支持手动创建支付单
 
-    @ApiOperation("分页搜索支付单")
+    //查询今天的api调用情况
+
+    //通过redis查询
+
+    @ApiOperation("分页搜索支付单（除了今天的api扣减）")
     @GetMapping("/list/page")
     public BaseResponse<Page<PayOrderVO>> listPayOrderByPage(@RequestBody PayOrderQueryRequest payOrderQueryRequest) {
         //只允许查询自己的订单

@@ -7,8 +7,6 @@ import com.apihub.pay.service.ApiOrderService;
 import com.apihub.pay.service.PayOrderService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.Calendar;
@@ -20,7 +18,7 @@ import static com.apihub.pay.model.enums.PayStatus.TRADE_SUCCESS;
 /**
  * 缓存预热任务 ，开发时可用在 test 里代替
  */
-@Component
+//@Component
 @Slf4j
 public class PayOrderJob {
 
@@ -32,7 +30,7 @@ public class PayOrderJob {
     private ApiOrderService apiOrderService;
 
     // cron   日期格式:秒 分 时 日 月 年
-    @Scheduled(cron = "10 59 23 * * *")
+//    @Scheduled(cron = "10 59 23 * * *")
     public void Job() {
         log.info("定时任务开启");
         //查询订单

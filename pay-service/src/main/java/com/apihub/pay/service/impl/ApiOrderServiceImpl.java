@@ -4,8 +4,8 @@ import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.ThrowUtils;
 import com.apihub.pay.mapper.ApiOrderMapper;
+import com.apihub.pay.model.dto.APIDeduct;
 import com.apihub.pay.model.dto.order.ApiOrderQueryRequest;
-import com.apihub.pay.model.dto.order.DeductOrderDTO;
 import com.apihub.pay.model.entity.ApiOrder;
 import com.apihub.pay.model.vo.ApiOrderVO;
 import com.apihub.pay.service.ApiOrderService;
@@ -38,21 +38,21 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
     private ApiOrderMapper apiOrderMapper;
 
     @Override
-    public Boolean deductOrder(DeductOrderDTO deductOrderDTO,Long userId) {
+    public Boolean deductOrder(APIDeduct APIDeduct, Long userId) {
         //数据检查
-        if (deductOrderDTO.getInterfaceId() == null) {
+        if (APIDeduct.getInterfaceId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口id为空");
         }
-        if (deductOrderDTO.getNum() == null) {
+        if (APIDeduct.getNum() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口id使用次数为空");
         }
-        if (deductOrderDTO.getTotalFee() == null) {
+        if (APIDeduct.getTotalFee() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "总费用为空");
         }
         //查询订单
         QueryWrapper<ApiOrder> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userId", userId);
-        queryWrapper.eq("interfaceId", deductOrderDTO.getInterfaceId());
+        queryWrapper.eq("interfaceId", APIDeduct.getInterfaceId());
 
         Calendar newCalendar = Calendar.getInstance();
         //todo 下面筛选endTime不知道为啥不行
@@ -67,17 +67,17 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
         ApiOrder oldOrder = apiOrderMapper.selectOne(queryWrapper);
         //查询到订单，修改数据
         if (oldOrder != null) {
-            oldOrder.setTotalFee(oldOrder.getTotalFee() + deductOrderDTO.getTotalFee());
-            oldOrder.setNum(oldOrder.getNum() + deductOrderDTO.getNum());
+            oldOrder.setTotalFee(oldOrder.getTotalFee() + APIDeduct.getTotalFee());
+            oldOrder.setNum(oldOrder.getNum() + APIDeduct.getNum());
             return this.updateById(oldOrder);
         }
         //没查询到订单，新建订单
         ApiOrder newOrder = new ApiOrder();
-        newOrder.setInterfaceId(deductOrderDTO.getInterfaceId());
+        newOrder.setInterfaceId(APIDeduct.getInterfaceId());
         newOrder.setUserId(userId);
-        newOrder.setNum(deductOrderDTO.getNum());
-        newOrder.setPaymentType(deductOrderDTO.getPaymentType());
-        newOrder.setTotalFee(deductOrderDTO.getTotalFee());
+        newOrder.setNum(APIDeduct.getNum());
+        newOrder.setPaymentType(APIDeduct.getPaymentType());
+        newOrder.setTotalFee(APIDeduct.getTotalFee());
 
         newOrder.setStatus(NOT_GENERATED_PAID.getCode());
 

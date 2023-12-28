@@ -1,4 +1,4 @@
-package com.apihub.pay.model.dto.pay.payvoucherorder;
+package com.apihub.pay.model.dto.payvoucherorder;
 
 import lombok.Data;
 

@@ -5,10 +5,11 @@ import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.ThrowUtils;
 import com.apihub.common.utils.UserHolder;
 import com.apihub.pay.mapper.PayOrderMapper;
-import com.apihub.pay.model.dto.pay.ChargePayDTO;
-import com.apihub.pay.model.dto.pay.PayOrderQueryRequest;
-import com.apihub.pay.model.dto.pay.payvoucherorder.VoucherBalancePayDTO;
-import com.apihub.pay.model.dto.pay.payvoucherorder.VoucherOrderVO;
+import com.apihub.pay.model.dto.APIDeduct;
+import com.apihub.pay.model.dto.ChargePayDTO;
+import com.apihub.pay.model.dto.PayOrderQueryRequest;
+import com.apihub.pay.model.dto.payvoucherorder.VoucherBalancePayDTO;
+import com.apihub.pay.model.dto.payvoucherorder.VoucherOrderVO;
 import com.apihub.pay.model.entity.PayOrder;
 import com.apihub.pay.model.enums.PayStatus;
 import com.apihub.pay.model.vo.PayOrderVO;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -137,6 +139,18 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder>
         if (!b) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR);
         }
+    }
+
+    @Override
+    public void apiDeductByBalance(APIDeduct apiDeduct, HttpServletRequest request) {
+        //查询redis中 用户调用次数
+
+        //没查询到，将MySQL中的数据加载到redis中
+        //key---apiDeductCount:{userId}
+
+        //修改redis
+        //数据有效期为24h
+
     }
 
 }
