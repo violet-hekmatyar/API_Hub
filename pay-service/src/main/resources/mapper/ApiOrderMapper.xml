@@ -17,7 +17,6 @@
             <result property="payTime" column="payTime" jdbcType="TIMESTAMP"/>
             <result property="startTime" column="startTime" jdbcType="TIMESTAMP"/>
             <result property="endTime" column="endTime" jdbcType="TIMESTAMP"/>
-            <result property="closeTime" column="closeTime" jdbcType="TIMESTAMP"/>
             <result property="commentTime" column="commentTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
             <result property="otherInfo" column="otherInfo" jdbcType="VARCHAR"/>
@@ -28,7 +27,7 @@
         interfaceId,userId,num,
         userAddress,status,createTime,
         payTime,startTime,endTime,
-        closeTime,commentTime,updateTime,
+        commentTime,updateTime,
         otherInfo
     </sql>
 </mapper>

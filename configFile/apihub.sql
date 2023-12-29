@@ -35,7 +35,6 @@ CREATE TABLE `api_order`
     `payTime`     timestamp(0)                                                   NULL     DEFAULT NULL COMMENT '支付时间',
     `startTime`   timestamp(0)                                                   NULL     DEFAULT NULL COMMENT '服务启用时间',
     `endTime`     timestamp(0)                                                   NULL     DEFAULT NULL COMMENT '服务关闭时间',
-    `closeTime`   timestamp(0)                                                   NULL     DEFAULT NULL COMMENT '交易关闭时间',
     `commentTime` timestamp(0)                                                   NULL     DEFAULT NULL COMMENT '评价时间',
     `updateTime`  timestamp(0)                                                   NULL     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
     `otherInfo`   varchar(1024) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL     DEFAULT '' COMMENT '拓展字段',
