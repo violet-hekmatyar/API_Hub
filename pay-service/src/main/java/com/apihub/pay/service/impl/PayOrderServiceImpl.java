@@ -190,6 +190,19 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder>
         entries.put(interfaceInfoIdStr, interfaceCount.toString());
         stringRedisTemplate.opsForHash().putAll(apiCountKey, entries);
     }
+
+    @Override
+    public Map<String, String> getTodayApiUsage(Long userId) {
+        String apiCountKey = API_DEDUCT_BALANCE_KEY + userId;
+        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(apiCountKey);
+        //将entries中的key从Object类型转换为String类型
+        Map<String, String> entriesString = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : entries.entrySet()) {
+            entriesString.put(entry.getKey().toString(), entry.getValue().toString());
+        }
+        return entriesString;
+    }
+
 }
 
 

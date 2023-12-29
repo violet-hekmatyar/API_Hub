@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 /**
  * @author IKUN
@@ -25,4 +26,6 @@ public interface PayOrderService extends IService<PayOrder> {
     void payVoucherOrder(VoucherBalancePayDTO deductPayDTO);
 
     void apiDeductByBalance(APIDeduct apiDeduct, HttpServletRequest request);
+
+    Map<String, String> getTodayApiUsage(Long userId);
 }

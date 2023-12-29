@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 @Api(tags = "支付单接口")
 @RestController
@@ -34,8 +35,12 @@ public class PayOrderController {
     private PayOrderService payOrderService;
 
     //查询今天的api调用情况
-
-    //通过redis查询
+    @ApiOperation("查询今天的api调用情况")
+    @GetMapping("/today")
+    public BaseResponse<Map<String, String>> getTodayApiUsage() {
+        Long userId = UserHolder.getUser();
+        return ResultUtils.success(payOrderService.getTodayApiUsage(userId));
+    }
 
     @ApiOperation("分页搜索支付单（除了今天的api扣减）")
     @GetMapping("/list/page")
