@@ -159,19 +159,20 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "总费用为空");
         }
         String interfaceInfoIdStr = apiDeduct.getInterfaceId().toString();
-        String apiNumStr = apiDeduct.getNum().toString();
+        String totalFee = apiDeduct.getTotalFee().toString();
 
-        //查询redis中 用户调用次数
+        //查询redis中 用户调用费用
         String apiCountKey = API_DEDUCT_BALANCE_KEY + UserHolder.getUser();
         Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(apiCountKey);
 
         //没查询到,新建
         if (entries.isEmpty()) {
             Map<String, String> apiCount = new HashMap<>();
-            apiCount.put(interfaceInfoIdStr, apiNumStr);
+            apiCount.put(interfaceInfoIdStr, totalFee);
             stringRedisTemplate.opsForHash().putAll(apiCountKey, apiCount);
             stringRedisTemplate.expire(apiCountKey, API_DEDUCT_TTL, TimeUnit.HOURS);
 
+            //记录哪些用户使用了api服务
             stringRedisTemplate.opsForList().leftPush(API_DEDUCT_USER_LIST_KEY, UserHolder.getUser().toString());
             return;
         }
@@ -181,14 +182,14 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder>
         //不存在,新增,并存储到redis中
         if (interfaceCountString == null) {
             stringRedisTemplate.opsForHash().put(
-                    apiCountKey, interfaceInfoIdStr, apiNumStr);
+                    apiCountKey, interfaceInfoIdStr, totalFee);
             return;
         }
 
-        Long interfaceCount = Long.valueOf(interfaceCountString);
+        Long interfaceTotalFee = Long.valueOf(interfaceCountString);
         //存在，增加次数并更新到redis中
-        interfaceCount += apiDeduct.getNum();
-        entries.put(interfaceInfoIdStr, interfaceCount.toString());
+        interfaceTotalFee += apiDeduct.getTotalFee();
+        entries.put(interfaceInfoIdStr, interfaceTotalFee.toString());
         stringRedisTemplate.opsForHash().putAll(apiCountKey, entries);
     }
 
