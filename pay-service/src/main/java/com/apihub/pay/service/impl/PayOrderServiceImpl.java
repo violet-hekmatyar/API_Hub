@@ -32,8 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.apihub.pay.model.enums.PayType.BALANCE_VOUCHER_PAY;
-import static com.apihub.pay.utils.ApiDeductConstants.API_DEDUCT_BALANCE_KEY;
-import static com.apihub.pay.utils.ApiDeductConstants.API_DEDUCT_TTL;
+import static com.apihub.pay.utils.ApiDeductConstants.*;
 
 /**
  * @author IKUN
@@ -172,6 +171,8 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder>
             apiCount.put(interfaceInfoIdStr, apiNumStr);
             stringRedisTemplate.opsForHash().putAll(apiCountKey, apiCount);
             stringRedisTemplate.expire(apiCountKey, API_DEDUCT_TTL, TimeUnit.HOURS);
+
+            stringRedisTemplate.opsForList().leftPush(API_DEDUCT_USER_LIST_KEY, UserHolder.getUser().toString());
             return;
         }
 

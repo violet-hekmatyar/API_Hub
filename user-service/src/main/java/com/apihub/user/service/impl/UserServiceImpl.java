@@ -108,6 +108,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
             }
+
+            //5. 同时注册用户的余额信息
+            UserBalancePayment userBalance = new UserBalancePayment();
+            userBalance.setUserId(user.getId());
+            userBalance.setBalance(0L);
+            userBalance.setScore(0L);
+            userBalance.setExpenseAmount(0L);
+            userBalance.setId(user.getId());
+            userBalance.setExpenseScore(0L);
+            userBalance.setFrozenAmount(0L);
+            userBalancePaymentService.save(userBalance);
+
             return user.getId();
         } finally {
             //释放锁
