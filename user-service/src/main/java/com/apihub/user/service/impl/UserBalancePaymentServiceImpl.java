@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.Collections;
 
 import static com.apihub.common.utils.RedisConstants.USER_BALANCE_KEY;
@@ -112,8 +111,7 @@ public class UserBalancePaymentServiceImpl extends ServiceImpl<UserBalancePaymen
         String amount = stringRedisTemplate.opsForValue().get(balanceKey);
         UserBalancePayment userBalancePayment = new UserBalancePayment();
         // 缓存里面不存在
-        if(StringUtils.isBlank(amount))
-        {
+        if (StringUtils.isBlank(amount)) {
             QueryWrapper<UserBalancePayment> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("userId", userId);
             userBalancePayment = userBalancePaymentMapper.selectOne(queryWrapper);
@@ -122,7 +120,10 @@ public class UserBalancePaymentServiceImpl extends ServiceImpl<UserBalancePaymen
             }
             // 数据库里面存在，放到缓存里面
             stringRedisTemplate.opsForValue().set(balanceKey, String.valueOf(userBalancePayment.getBalance()));
+        } else {
+            userBalancePayment.setBalance(Long.valueOf(amount));
         }
+        userBalancePayment.setUserId(userId);
 
         return userBalancePayment;
     }
