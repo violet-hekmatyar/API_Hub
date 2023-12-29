@@ -45,6 +45,7 @@ public class ApiOrder implements Serializable {
      */
     private String userAddress;
     /**
+     * (弃用,所有调用均已付款)
      * 订单的状态，1、未付款 2、已付款,未发货 3、已发货,未确认 4、确认收货，交易成功 5、交易取消，订单关闭 6、交易结束，已评价
      */
     private Integer status;
@@ -57,18 +58,14 @@ public class ApiOrder implements Serializable {
      */
     private Date payTime;
     /**
-     * 服务启用时间
+     * 服务启用时间(时段卡)
      */
     private Date startTime;
     /**
-     * 服务关闭时间
+     * 服务关闭时间(时段卡)
      */
     @TableField(value = "endTime",fill = FieldFill.INSERT)
     private Date endTime;
-    /**
-     * 交易关闭时间
-     */
-    private Date closeTime;
     /**
      * 评价时间
      */
