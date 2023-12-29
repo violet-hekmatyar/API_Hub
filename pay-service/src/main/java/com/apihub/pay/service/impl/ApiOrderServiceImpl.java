@@ -53,11 +53,12 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
         QueryWrapper<ApiOrder> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userId", userId);
         queryWrapper.eq("interfaceId", deductOrderDTO.getInterfaceId());
+        queryWrapper.eq("userAddress", deductOrderDTO.getUserAddress());
+
+        //todo 下面筛选endTime不知道为啥不行
+        //queryWrapper.le("endTime",newCalendar.getTime());
 
         Calendar newCalendar = Calendar.getInstance();
-        //todo 下面筛选endTime不知道为啥不行
-
-        //queryWrapper.le("endTime",newCalendar.getTime());
         //直接选择今天的日期，指定时间，直接通过string比较
         newCalendar.set(Calendar.MINUTE, 59);
         newCalendar.set(Calendar.HOUR_OF_DAY, 23);
@@ -81,15 +82,12 @@ public class ApiOrderServiceImpl extends ServiceImpl<ApiOrderMapper, ApiOrder>
 
         newOrder.setStatus(NOT_GENERATED_PAID.getCode());
 
-
-        //结束时间设置为当天的23:59:00
-        newOrder.setEndTime(newCalendar.getTime());
         //选择今天的日期，指定时间，以string形式存储
         newOrder.setOtherInfo(newCalendar.getTime().toString());
 
         newOrder.setPaymentType(3);
-        //todo 用户ip
-        newOrder.setUserAddress("127.0.0.1");
+        //用户ip,可能是最后转发站的ip
+        newOrder.setUserAddress(deductOrderDTO.getUserAddress());
 
         return this.save(newOrder);
     }

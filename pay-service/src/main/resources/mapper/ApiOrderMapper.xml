@@ -14,10 +14,8 @@
             <result property="userAddress" column="userAddress" jdbcType="VARCHAR"/>
             <result property="status" column="status" jdbcType="TINYINT"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="payTime" column="payTime" jdbcType="TIMESTAMP"/>
             <result property="startTime" column="startTime" jdbcType="TIMESTAMP"/>
             <result property="endTime" column="endTime" jdbcType="TIMESTAMP"/>
-            <result property="commentTime" column="commentTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
             <result property="otherInfo" column="otherInfo" jdbcType="VARCHAR"/>
     </resultMap>
@@ -26,8 +24,7 @@
         id,totalFee,paymentType,
         interfaceId,userId,num,
         userAddress,status,createTime,
-        payTime,startTime,endTime,
-        commentTime,updateTime,
-        otherInfo
+        startTime,endTime,
+        updateTime,otherInfo
     </sql>
 </mapper>
