@@ -111,11 +111,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
             //5. 同时注册用户的余额信息
             UserBalancePayment userBalance = new UserBalancePayment();
+            userBalance.setId(user.getId());
             userBalance.setUserId(user.getId());
             userBalance.setBalance(0L);
             userBalance.setScore(0L);
             userBalance.setExpenseAmount(0L);
-            userBalance.setId(user.getId());
             userBalance.setExpenseScore(0L);
             userBalance.setFrozenAmount(0L);
             userBalancePaymentService.save(userBalance);
