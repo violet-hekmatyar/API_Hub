@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,10 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
 import java.util.List;
+
+import static com.apihub.common.utils.RedisConstants.USER_TOKEN_KEY;
 
 
 @Component
@@ -27,6 +31,9 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
     private final AuthProperties authProperties;
 
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -44,13 +51,17 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
             token = headers.get(0);
         } else {
             token = null;
+            ServerHttpResponse response = exchange.getResponse();
+            response.setRawStatusCode(401);
+            return response.setComplete();
         }
-        // 4.校验并解析token
-        Long userId;
+        // 4.以token为key,从redis中获取用户id
         String userIdInfo;
         try {
-//            userId = jwtTool.parseToken(token);
-            userId = 1L;
+            userIdInfo = stringRedisTemplate.opsForValue().get(USER_TOKEN_KEY + token);
+            if (userIdInfo == null) {
+                throw new RuntimeException("token无效");
+            }
         } catch (Exception e) {
             // 如果无效，拦截
             log.warn(e.getMessage());
@@ -60,7 +71,6 @@ public class LoginGlobalFilter implements GlobalFilter, Ordered {
         }
 
         // token有效，传递用户信息
-        userIdInfo = userId.toString();
 
         ServerWebExchange ex = exchange.mutate()
                 .request(b -> b.header("userId-info", userIdInfo))

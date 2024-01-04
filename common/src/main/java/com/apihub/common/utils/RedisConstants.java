@@ -15,6 +15,8 @@ public class RedisConstants {
 
     public static final String API_INVOKE_KEY = "ak:apiInvoke:";
 
+    public static final String USER_TOKEN_KEY = "user:token:";
+
     //接口详细信息
     public static final String INTERFACEINFO_DETAIL_KEY = "interfaceInfo:detail:";
     //接口请求方法

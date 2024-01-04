@@ -58,6 +58,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Resource
     private UserBalancePaymentServiceImpl userBalancePaymentService;
+
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
         // 1. 校验
@@ -80,8 +81,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(REGISTER_LOCK_KEY + userAccount, "locked");
 
         // 如果加锁失败，说明正在注册中，直接返回，不走try里面的逻辑
-        if(!flag)
-        {
+        if (!flag) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "系统繁忙中，请稍后重试");
         }
         try {
@@ -188,10 +188,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         //以AK为key存一份(两个作用，存在的话就是刷新有效期，不存在的话就是补充)
         HashMap<String, Object> userAkInfo = new HashMap<>();
-        userAkInfo.put("id",String.valueOf(user.getId()));
-        userAkInfo.put("secretKey",user.getSecretKey());
+        userAkInfo.put("id", String.valueOf(user.getId()));
+        userAkInfo.put("secretKey", user.getSecretKey());
         stringRedisTemplate.opsForHash().putAll(API_ACCESS_KEY + accessKey, userAkInfo);
-
 
 
         // 保存用户余额
@@ -204,15 +203,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         UserBalancePayment balanceInfo = userBalancePaymentService.getOne(balanceQuery);
 
 
-        stringRedisTemplate.opsForValue().set(blcKey , String.valueOf(balanceInfo.getBalance()));
+        stringRedisTemplate.opsForValue().set(blcKey, String.valueOf(balanceInfo.getBalance()));
 
 
         //Todo 可将此时间设置长一些
-        stringRedisTemplate.expire(API_ACCESS_KEY + accessKey,LOGIN_USER_TTL,TimeUnit.MINUTES);
+        stringRedisTemplate.expire(API_ACCESS_KEY + accessKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
         // 用户余额的TTL设置成26h
         stringRedisTemplate.expire(blcKey, USER_BALANCE_TTL, TimeUnit.HOURS);
 
+        //以token为key存一份
+        stringRedisTemplate.opsForValue().set(USER_TOKEN_KEY + token, user.getId().toString(), LOGIN_USER_TTL, TimeUnit.MINUTES);
 
         // 返回token+user信息
         userLoginVo.setToken(token);
@@ -300,8 +301,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public UserKeyPairVO changeKeyPair(LoginFormDTO loginFormDTO) {
-        if(loginFormDTO == null || StringUtils.isBlank(loginFormDTO.getUserPassword()) )
-        {
+        if (loginFormDTO == null || StringUtils.isBlank(loginFormDTO.getUserPassword())) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数有误");
         }
 
@@ -328,11 +328,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         wrapper.eq("userAccount", userAccount);
         wrapper.eq("userPassword", encryptPassword);
         wrapper.set("accessKey", accessKey);
-        wrapper.set("secretKey",secretKey);
+        wrapper.set("secretKey", secretKey);
 
         boolean update = this.update(wrapper);
-        if(!update)
-        {
+        if (!update) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
         }
 
