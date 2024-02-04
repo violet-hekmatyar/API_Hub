@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -94,33 +95,68 @@ public class InterfaceController {
         }
         Integer topPrice = interfaceInfoQueryRequest.getTopPrice();
         Integer lowPrice = interfaceInfoQueryRequest.getLowPrice();
+        if (topPrice == null) {
+            topPrice = 999999;
+        }
+        if (lowPrice == null) {
+            lowPrice = 0;
+        }
         if (lowPrice < 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
-        InterfaceInfo interfaceInfoQuery = new InterfaceInfo();
-        BeanUtils.copyProperties(interfaceInfoQueryRequest, interfaceInfoQuery);
-        long current = interfaceInfoQueryRequest.getCurrent();
-        long size = interfaceInfoQueryRequest.getPageSize();
-        String sortField = interfaceInfoQueryRequest.getSortField();
-        String sortOrder = interfaceInfoQueryRequest.getSortOrder();
-        String description = interfaceInfoQuery.getDescription();
-
-
-        // description 需支持模糊搜索
-        interfaceInfoQuery.setDescription(null);
+//        InterfaceInfo interfaceInfoQuery = new InterfaceInfo();
+//        BeanUtils.copyProperties(interfaceInfoQueryRequest, interfaceInfoQuery);
+        //判断interfaceInfoQueryRequest.getCurrent()是否为空
+        Long current = interfaceInfoQueryRequest.getCurrent();
+        Long size = interfaceInfoQueryRequest.getPageSize();
+        if (current == null) {
+            current = 1L;
+        }
+        if (size == null) {
+            size = 10L;
+        }
         // 限制爬虫
         if (size > 20) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
-        //description 模糊搜索
-        queryWrapper.like(StringUtils.isNotBlank(description), "description", description);
-        //在上限价格和下限价格中查找
-        queryWrapper.between("price", lowPrice, topPrice);
 
-        queryWrapper.orderBy(StringUtils.isNotBlank(sortField),
-                sortOrder.equals("ascend"), sortField);
+        String sortField = interfaceInfoQueryRequest.getSortField();
+        String sortOrder = interfaceInfoQueryRequest.getSortOrder();
+
+
+        Long id = interfaceInfoQueryRequest.getId();
+        String name = interfaceInfoQueryRequest.getName();
+        String description = interfaceInfoQueryRequest.getDescription();
+        String url = interfaceInfoQueryRequest.getUrl();
+        String requestHeader = interfaceInfoQueryRequest.getRequestHeader();
+        String responseHeader = interfaceInfoQueryRequest.getResponseHeader();
+        Integer status = interfaceInfoQueryRequest.getStatus();
+        String method = interfaceInfoQueryRequest.getMethod();
+        Long userId = interfaceInfoQueryRequest.getUserId();
+        String category = interfaceInfoQueryRequest.getCategory();
+
+
+        // description 需支持模糊搜索
+        //interfaceInfoQuery.setDescription(null);
+
+        QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>();
+        //description 模糊搜索
+        queryWrapper
+                .like(StringUtils.isNotBlank(description), "description", description)
+                //在上限价格和下限价格中查找
+                .between("price", lowPrice, topPrice)
+                .orderBy(StringUtils.isNotBlank(sortField), sortOrder.equals("ascend"), sortField)
+                //排除空参数
+                .eq(ObjectUtils.isNotEmpty(id), "id", id)
+                .eq(StringUtils.isNotEmpty(name), "name", name)
+                .like(StringUtils.isNotEmpty(url), "url", url)
+                .like(StringUtils.isNotEmpty(requestHeader), "requestHeader", requestHeader)
+                .like(StringUtils.isNotEmpty(responseHeader), "responseHeader", responseHeader)
+                .eq(status != null, "status", status)
+                .eq(StringUtils.isNotEmpty(method), "method", method)
+                .eq(userId != null, "userId", userId)
+                .eq(StringUtils.isNotEmpty(category), "category", category);
 
         Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.page(new Page<>(current, size), queryWrapper);
         Page<InterfaceInfoVO> interfaceInfoVOPage = (Page<InterfaceInfoVO>) interfaceInfoPage.convert(interfaceInfo -> {
@@ -179,7 +215,6 @@ public class InterfaceController {
         }
 
 
-
         long id = idRequest.getId();
         // 判断是否存在
         InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
@@ -188,7 +223,7 @@ public class InterfaceController {
         }
         // 仅本人或管理员可修改
         Long userId = UserHolder.getUser();
-        if (!Objects.equals(userId,oldInterfaceInfo.getUserId()) && !interfaceInfoClient.checkAdmin()) {
+        if (!Objects.equals(userId, oldInterfaceInfo.getUserId()) && !interfaceInfoClient.checkAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
 
