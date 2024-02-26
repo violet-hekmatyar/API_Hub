@@ -341,4 +341,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         return keyPairVO;
     }
+
+    /**
+     * 查询当前用户ak/sk
+     * todo 可以加入redis优化查询
+     * @return
+     */
+    @Override
+    public UserKeyPairVO getKeyPair() {
+        UserVO loginUser = getLoginUser();
+        Long id = loginUser.getId();
+
+        User user = getOne(new QueryWrapper<User>().eq("id", id));
+
+        UserKeyPairVO keyPairVO = new UserKeyPairVO();
+        keyPairVO.setAccessKey(user.getAccessKey());
+        keyPairVO.setSecreteKey(user.getSecretKey());
+
+        return keyPairVO;
+    }
 }

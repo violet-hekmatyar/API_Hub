@@ -84,6 +84,17 @@ public class userController {
 
         return ResultUtils.success(keyPairVO);
     }
+
+    @ApiOperation("查询ak/sk")
+    @GetMapping("/getPair")
+    public BaseResponse<UserKeyPairVO> getKeyPair()
+    {
+        UserKeyPairVO keyPairVO = userService.getKeyPair();
+
+        return ResultUtils.success(keyPairVO);
+    }
+
+
     @ApiOperation("获取当前登录用户")
     @GetMapping("/get/login")
     public BaseResponse<UserVO> getLoginUser(HttpServletRequest request) {

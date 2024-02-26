@@ -23,4 +23,7 @@ public interface UserService extends IService<User> {
     Boolean checkUserAK(String accessKey, String sign);
 
     UserKeyPairVO changeKeyPair(LoginFormDTO loginFormDTO);
+
+    UserKeyPairVO getKeyPair();
+
 }
