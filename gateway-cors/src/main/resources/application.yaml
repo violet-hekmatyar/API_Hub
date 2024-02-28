@@ -55,6 +55,7 @@ apihub:
     excludePaths:
       - /api/user/login
       - /api/apiService/**
+      - /api/user/register
     # 需要AK验证的路径
     includePaths:
       - /api/apiService/**
