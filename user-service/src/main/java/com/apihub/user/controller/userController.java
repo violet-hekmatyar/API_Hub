@@ -124,7 +124,7 @@ public class userController {
 
     @ApiOperation("根据id获取用户")
     @GetMapping("/get")
-    @AuthCheck(mustRole = ADMIN_ROLE)
+//    @AuthCheck(mustRole = ADMIN_ROLE)
     public BaseResponse<UserVO> getUserById(int id, HttpServletRequest request) {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
