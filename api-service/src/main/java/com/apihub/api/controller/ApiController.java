@@ -18,6 +18,7 @@ import com.apihub.common.utils.UserHolder;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -56,7 +57,8 @@ public class ApiController {
 
         //向url发请求
         String requestBody = URLUtil.decode(body, CharsetUtil.CHARSET_UTF_8);
-        HttpResponse httpResponse = HttpRequest.get(interfaceInfo.getUrl() + "?" + requestBody)
+        String param = StringUtils.isEmpty(requestBody) ? "" : ("?" + requestBody);
+        HttpResponse httpResponse = HttpRequest.post(interfaceInfo.getUrl() + param)
                 .execute();
 
         //请求成功，使用MQ队列
