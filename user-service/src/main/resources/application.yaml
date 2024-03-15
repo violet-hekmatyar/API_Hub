@@ -10,18 +10,18 @@ spring:
   cloud:
     nacos:
       server-addr: 127.0.0.1:8848
-#      server-addr: 8.130.35.69:8848 # nacos地址
+#      server-addr: 120.26.116.249:8848 # nacos地址
 #      username: nacos
 #      password: Jimmy@2333
   datasource:
-    url: jdbc:mysql://8.130.35.69:3306/apihub
+    url: jdbc:mysql://120.26.116.249:3306/apihub
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: Jimmy@2333
   # Redis 配置
   redis:
     database: 6
-    host: 8.130.35.69
+    host: 120.26.116.249
     port: 6379
     timeout: 5000
     lettuce:
