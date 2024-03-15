@@ -104,6 +104,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             user.setUserPassword(encryptPassword);
             user.setAccessKey(accessKey);
             user.setSecretKey(secretKey);
+
             boolean saveResult = this.save(user);
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
@@ -113,7 +114,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             UserBalancePayment userBalance = new UserBalancePayment();
             userBalance.setId(user.getId());
             userBalance.setUserId(user.getId());
-            userBalance.setBalance(0L);
+            userBalance.setBalance(1000L);
             userBalance.setScore(0L);
             userBalance.setExpenseAmount(0L);
             userBalance.setExpenseScore(0L);
