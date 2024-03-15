@@ -5,6 +5,8 @@ import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.apihub.api.model.domain.InterfaceInfo;
 import com.apihub.api.model.dto.DeductOrderMqDTO;
 import com.apihub.api.openFeign.client.InterfaceInfoServiceClient;
@@ -25,9 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import static com.apihub.common.utils.RedisConstants.*;
 
@@ -62,9 +62,15 @@ public class ApiController {
                 .execute();
 
         //请求成功，使用MQ队列
-        sendMQ(interfaceInfo, request);
+//        sendMQ(interfaceInfo, request);
 
-        return ResultUtils.success(httpResponse.body());
+        String response = httpResponse.body();
+        if(interfaceId == 3L)
+        {
+            return ResultUtils.success(JSON.parseObject(response).get("imgurl"));
+        }
+
+        return ResultUtils.success(response);
     }
 
 
@@ -82,7 +88,7 @@ public class ApiController {
                 .execute();
 
         //请求成功，使用MQ队列
-        sendMQ(interfaceInfo, request);
+//        sendMQ(interfaceInfo, request);
 
         return ResultUtils.success(httpResponse.body());
     }
