@@ -8,6 +8,7 @@ import com.apihub.user.mapper.UserBalancePaymentMapper;
 import com.apihub.user.model.entity.UserBalancePayment;
 import com.apihub.user.model.vo.UserBalanceVO;
 import com.apihub.user.service.UserBalancePaymentService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -50,29 +52,29 @@ public class UserBalancePaymentServiceImpl extends ServiceImpl<UserBalancePaymen
 
 
     @Override
+    @Transactional
     public Boolean deductBalance(Integer amount) {
         log.info("开始扣款");
-        UserBalancePayment userBalancePayment = getUserBalancePayment();
 
-//        会有线程安全问题
-//        if (userBalancePayment.getBalance() < amount) {
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR, "余额不足");
-//        }
-//        //扣减余额
-//        userBalancePayment.setBalance(userBalancePayment.getBalance() - amount);
+        // 获取当前登录用户
+        Long userId = UserHolder.getUser();
 
-        // 测试
-//        Long userId = 1L;
-        Long userId = userBalancePayment.getUserId();
+        UserBalancePayment userBalancePayment = userBalancePaymentMapper.selectOne(new QueryWrapper<UserBalancePayment>().eq("userId", userId));
 
-        // 调用lua脚本, 直接在Redis里面更新
-        Long res = stringRedisTemplate.execute(SECKILL_SCRIPT,
-                Collections.emptyList(),
-                String.valueOf(userId), String.valueOf(amount));
+        Long balance = userBalancePayment.getBalance();
+        if( balance < amount)
+        {
+            return false;
+        }
+        userBalancePayment.setBalance(balance - amount);
+        userBalancePaymentMapper.updateById(userBalancePayment);
 
-//        return this.updateById(userBalancePayment);
 
-        return res == 0 ? Boolean.TRUE : Boolean.FALSE ;
+        // 删掉缓存
+        String balanceKey = USER_BALANCE_KEY + userId;
+        stringRedisTemplate.delete(balanceKey);
+
+        return true;
     }
 
     @Override
@@ -105,7 +107,7 @@ public class UserBalancePaymentServiceImpl extends ServiceImpl<UserBalancePaymen
      * @return
      */
     private UserBalancePayment getUserBalancePayment() {
-
+        // 获取当前登录用户
         Long userId = UserHolder.getUser();
         String balanceKey = USER_BALANCE_KEY + userId;
         String amount = stringRedisTemplate.opsForValue().get(balanceKey);
