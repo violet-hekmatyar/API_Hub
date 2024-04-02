@@ -244,7 +244,7 @@ public class userController {
     /*
      * 绑定邮箱发送验证码
      * */
-    @ApiOperation("绑定邮箱")
+    @ApiOperation("发送绑定邮箱验证码")
     @PostMapping("/code/bind/email")
     public BaseResponse<Boolean> getCodeForBindEmail(@RequestBody GetCodeForBindEmailRequest getCodeForBindEmailRequest, HttpServletRequest request) {
         if (getCodeForBindEmailRequest == null || getCodeForBindEmailRequest.getEmail() == null) {
