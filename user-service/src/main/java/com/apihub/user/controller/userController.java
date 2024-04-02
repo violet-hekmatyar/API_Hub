@@ -260,4 +260,6 @@ public class userController {
 
         return ResultUtils.success(userService.getCodeForBindEmail(getCodeForBindEmailRequest));
     }
+
+
 }

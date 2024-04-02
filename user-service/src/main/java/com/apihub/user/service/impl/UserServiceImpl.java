@@ -390,7 +390,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (b) {
             //发送成功，将验证码存入redis中，设置5分钟过期时间
             //key为：USER_EMAIL_CODE_KEY+email+userid
-            stringRedisTemplate.opsForValue().set(USER_EMAIL_CODE_KEY + email + ":" + getCodeForBindEmailRequest.getId()
+            stringRedisTemplate.opsForValue().set(USER_EMAIL_BIND_CODE_KEY + email + ":" + getCodeForBindEmailRequest.getId()
                     , String.valueOf(code), 5, TimeUnit.MINUTES);
         }
         return b;
