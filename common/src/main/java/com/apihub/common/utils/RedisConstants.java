@@ -17,6 +17,8 @@ public class RedisConstants {
 
     public static final String USER_TOKEN_KEY = "user:token:";
 
+    public static final String USER_EMAIL_CODE_KEY = "user:code:email:";
+
     //接口详细信息
     public static final String INTERFACEINFO_DETAIL_KEY = "interfaceInfo:detail:";
     //接口请求方法

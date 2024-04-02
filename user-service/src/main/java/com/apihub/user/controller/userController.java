@@ -63,14 +63,13 @@ public class userController {
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        UserLoginVO userLoginVo =  userService.login(loginFormDTO);
+        UserLoginVO userLoginVo = userService.login(loginFormDTO);
         return ResultUtils.success(userLoginVo);
     }
 
     @ApiOperation("更换ak/sk")
     @PostMapping("/changeKeyPair")
-    public BaseResponse<UserKeyPairVO> changeKeyPair(@RequestBody LoginFormDTO loginFormDTO)
-    {
+    public BaseResponse<UserKeyPairVO> changeKeyPair(@RequestBody LoginFormDTO loginFormDTO) {
         if (loginFormDTO == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -87,8 +86,7 @@ public class userController {
 
     @ApiOperation("查询ak/sk")
     @GetMapping("/getPair")
-    public BaseResponse<UserKeyPairVO> getKeyPair()
-    {
+    public BaseResponse<UserKeyPairVO> getKeyPair() {
         UserKeyPairVO keyPairVO = userService.getKeyPair();
 
         return ResultUtils.success(keyPairVO);
@@ -105,6 +103,7 @@ public class userController {
         }
         return ResultUtils.success(user);
     }
+
     @ApiOperation("添加用户")
     @PostMapping("/add")
     @AuthCheck(mustRole = ADMIN_ROLE)
@@ -201,7 +200,7 @@ public class userController {
     @ApiOperation("更新用户（自己）")
     @PostMapping("/updateSelf")
     public BaseResponse<Boolean> updateUserVo(@RequestBody UserUpdateVoRequest UserUpdateVoRequest,
-                                            HttpServletRequest request) {
+                                              HttpServletRequest request) {
 
         if (UserUpdateVoRequest == null || UserUpdateVoRequest.getId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -219,8 +218,6 @@ public class userController {
 
     /**
      * 删除用户
-     *
-     *
      */
     @ApiOperation("删除用户")
     @PostMapping("/delete")
@@ -242,5 +239,25 @@ public class userController {
         } else {
             return new BaseResponse<>(OPERATION_ERROR);
         }
+    }
+
+    /*
+     * 绑定邮箱发送验证码
+     * */
+    @ApiOperation("绑定邮箱")
+    @PostMapping("/code/bind/email")
+    public BaseResponse<Boolean> getCodeForBindEmail(@RequestBody GetCodeForBindEmailRequest getCodeForBindEmailRequest, HttpServletRequest request) {
+        if (getCodeForBindEmailRequest == null || getCodeForBindEmailRequest.getEmail() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        UserVO currentUser = userService.getLoginUser();
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        GetCodeForBindEmailRequest newGetCodeForBindEmailRequest = new GetCodeForBindEmailRequest();
+        newGetCodeForBindEmailRequest.setEmail(getCodeForBindEmailRequest.getEmail());
+        newGetCodeForBindEmailRequest.setId(currentUser.getId());
+
+        return ResultUtils.success(userService.getCodeForBindEmail(getCodeForBindEmailRequest));
     }
 }

@@ -1,5 +1,6 @@
 package com.apihub.user.service;
 
+import com.apihub.user.model.dto.GetCodeForBindEmailRequest;
 import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
 import com.apihub.user.model.vo.UserKeyPairVO;
@@ -26,4 +27,5 @@ public interface UserService extends IService<User> {
 
     UserKeyPairVO getKeyPair();
 
+    Boolean getCodeForBindEmail(GetCodeForBindEmailRequest getCodeForBindEmailRequest);
 }

@@ -9,6 +9,7 @@ import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
 import com.apihub.user.config.JwtProperties;
 import com.apihub.user.mapper.UserMapper;
+import com.apihub.user.model.dto.GetCodeForBindEmailRequest;
 import com.apihub.user.model.dto.LoginFormDTO;
 import com.apihub.user.model.entity.User;
 import com.apihub.user.model.entity.UserBalancePayment;
@@ -17,12 +18,14 @@ import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
 import com.apihub.user.utils.JwtTool;
+import com.apihub.user.utils.MailUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static com.apihub.common.utils.RedisConstants.*;
@@ -342,9 +346,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return keyPairVO;
     }
 
+    @Autowired
+    private MailUtil mailUtil;
+
     /**
      * 查询当前用户ak/sk
      * todo 可以加入redis优化查询
+     *
      * @return
      */
     @Override
@@ -359,5 +367,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         keyPairVO.setSecreteKey(user.getSecretKey());
 
         return keyPairVO;
+    }
+
+    @Override
+    public Boolean getCodeForBindEmail(GetCodeForBindEmailRequest getCodeForBindEmailRequest) {
+        if (getCodeForBindEmailRequest.getId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户id不存在");
+        }
+
+        //检查email是否符合邮件格式
+        String email = getCodeForBindEmailRequest.getEmail();
+        if (!mailUtil.isValidEmail(email)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮件格式错误");
+        }
+
+        //产生六位数验证码
+        int code = new Random().nextInt(900000) + 100000;
+
+        log.info("发送验证码，邮箱地址" + email + "验证码为：" + code);
+        boolean b = mailUtil.sendMailMessage(email, "绑定邮箱验证码", "您的验证码为：" + code + "，请在5分钟内完成验证");
+
+        if (b) {
+            //发送成功，将验证码存入redis中，设置5分钟过期时间
+            //key为：USER_EMAIL_CODE_KEY+email+userid
+            stringRedisTemplate.opsForValue().set(USER_EMAIL_CODE_KEY + email + ":" + getCodeForBindEmailRequest.getId()
+                    , String.valueOf(code), 5, TimeUnit.MINUTES);
+        }
+        return b;
     }
 }

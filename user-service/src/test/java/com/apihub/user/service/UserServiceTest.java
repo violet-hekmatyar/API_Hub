@@ -1,5 +1,6 @@
 package com.apihub.user.service;
 
+import com.apihub.user.model.dto.GetCodeForBindEmailRequest;
 import com.apihub.user.model.dto.UserQueryRequest;
 import com.apihub.user.model.entity.User;
 import com.apihub.user.model.vo.UserVO;
@@ -55,5 +56,15 @@ public class UserServiceTest {
         for (UserVO userVO : userVOList) {
             System.out.println(userVO.toString());
         }
+    }
+
+
+    @Test
+    void getCodeForBindEmailTest() {
+        GetCodeForBindEmailRequest request = new GetCodeForBindEmailRequest();
+        request.setEmail("1355609295@qq.com");
+        request.setId(1L);
+        Boolean codeForBindEmail = userService.getCodeForBindEmail(request);
+        System.out.println(codeForBindEmail);
     }
 }
