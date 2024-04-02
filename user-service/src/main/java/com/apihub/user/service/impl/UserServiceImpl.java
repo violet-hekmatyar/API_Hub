@@ -11,6 +11,7 @@ import com.apihub.user.config.JwtProperties;
 import com.apihub.user.mapper.UserMapper;
 import com.apihub.user.model.dto.GetCodeForBindEmailRequest;
 import com.apihub.user.model.dto.LoginFormDTO;
+import com.apihub.user.model.dto.VerifyCodeForBindEmailRequest;
 import com.apihub.user.model.entity.User;
 import com.apihub.user.model.entity.UserBalancePayment;
 import com.apihub.user.model.vo.UserKeyPairVO;
@@ -371,7 +372,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public Boolean getCodeForBindEmail(GetCodeForBindEmailRequest getCodeForBindEmailRequest) {
-        if (getCodeForBindEmailRequest.getId() == null) {
+        if (getCodeForBindEmailRequest.getUserId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户id不存在");
         }
 
@@ -390,9 +391,49 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (b) {
             //发送成功，将验证码存入redis中，设置5分钟过期时间
             //key为：USER_EMAIL_CODE_KEY+email+userid
-            stringRedisTemplate.opsForValue().set(USER_EMAIL_BIND_CODE_KEY + email + ":" + getCodeForBindEmailRequest.getId()
+            stringRedisTemplate.opsForValue().set(USER_EMAIL_BIND_CODE_KEY + email + ":" + getCodeForBindEmailRequest.getUserId()
                     , String.valueOf(code), 5, TimeUnit.MINUTES);
         }
         return b;
+    }
+
+    @Override
+    public Boolean verifyCodeForBindEmail(VerifyCodeForBindEmailRequest newVerifyCodeForBindEmailRequest) {
+        if (newVerifyCodeForBindEmailRequest.getUserId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户id不存在");
+        }
+        if (newVerifyCodeForBindEmailRequest.getCode() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码不存在");
+        }
+        //检查email是否符合邮件格式
+        String email = newVerifyCodeForBindEmailRequest.getEmail();
+        if (!mailUtil.isValidEmail(email)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮件格式错误");
+        }
+
+        String key = USER_EMAIL_BIND_CODE_KEY
+                + email + ":" + newVerifyCodeForBindEmailRequest.getUserId();
+
+        //检查验证码
+        String code = stringRedisTemplate.opsForValue().get(key);
+        if (code == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "杨正吗未发送或验证码已过期");
+        } else {
+            if (!code.equals(newVerifyCodeForBindEmailRequest.getCode())) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码错误");
+            }
+        }
+
+        //验证码验证通过后，删除验证码
+        stringRedisTemplate.delete(key);
+
+        //将邮件绑定到用户信息中
+        User user = this.getById(newVerifyCodeForBindEmailRequest.getUserId());
+        user.setMpOpenId(email);
+        boolean b = this.updateById(user);
+        if (!b) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "绑定邮箱失败");
+        }
+        return true;
     }
 }

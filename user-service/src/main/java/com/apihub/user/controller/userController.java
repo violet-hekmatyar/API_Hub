@@ -245,7 +245,7 @@ public class userController {
      * 绑定邮箱发送验证码
      * */
     @ApiOperation("发送绑定邮箱验证码")
-    @PostMapping("/code/bind/email")
+    @PostMapping("/bind/email/code")
     public BaseResponse<Boolean> getCodeForBindEmail(@RequestBody GetCodeForBindEmailRequest getCodeForBindEmailRequest, HttpServletRequest request) {
         if (getCodeForBindEmailRequest == null || getCodeForBindEmailRequest.getEmail() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -254,12 +254,34 @@ public class userController {
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
+        //将userId装入请求中
         GetCodeForBindEmailRequest newGetCodeForBindEmailRequest = new GetCodeForBindEmailRequest();
         newGetCodeForBindEmailRequest.setEmail(getCodeForBindEmailRequest.getEmail());
-        newGetCodeForBindEmailRequest.setId(currentUser.getId());
+        newGetCodeForBindEmailRequest.setUserId(currentUser.getId());
 
         return ResultUtils.success(userService.getCodeForBindEmail(getCodeForBindEmailRequest));
     }
 
+    /*
+     * 验证绑定邮箱验证码
+     * */
+    @ApiOperation("验证绑定邮箱验证码")
+    @PostMapping("/code/bind/email/verify")
+    public BaseResponse<Boolean> verifyCodeForBindEmail
+    (@RequestBody VerifyCodeForBindEmailRequest verifyCodeForBindEmailRequest, HttpServletRequest request) {
+        if (verifyCodeForBindEmailRequest == null || verifyCodeForBindEmailRequest.getCode() == null
+                || verifyCodeForBindEmailRequest.getEmail() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        UserVO currentUser = userService.getLoginUser();
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        VerifyCodeForBindEmailRequest newVerifyCodeForBindEmailRequest = new VerifyCodeForBindEmailRequest();
+        newVerifyCodeForBindEmailRequest.setCode(verifyCodeForBindEmailRequest.getCode());
+        newVerifyCodeForBindEmailRequest.setEmail(verifyCodeForBindEmailRequest.getEmail());
+        newVerifyCodeForBindEmailRequest.setUserId(currentUser.getId());
 
+        return ResultUtils.success(userService.verifyCodeForBindEmail(newVerifyCodeForBindEmailRequest));
+    }
 }

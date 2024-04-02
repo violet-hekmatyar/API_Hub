@@ -14,9 +14,9 @@ public class GetCodeForBindEmailRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * id
+     * userId
      */
-    private Long id;
+    private Long userId;
 
     private String email;
 }

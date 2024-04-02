@@ -2,6 +2,7 @@ package com.apihub.user.service;
 
 import com.apihub.user.model.dto.GetCodeForBindEmailRequest;
 import com.apihub.user.model.dto.UserQueryRequest;
+import com.apihub.user.model.dto.VerifyCodeForBindEmailRequest;
 import com.apihub.user.model.entity.User;
 import com.apihub.user.model.vo.UserVO;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -63,8 +64,18 @@ public class UserServiceTest {
     void getCodeForBindEmailTest() {
         GetCodeForBindEmailRequest request = new GetCodeForBindEmailRequest();
         request.setEmail("1355609295@qq.com");
-        request.setId(1L);
+        request.setUserId(1L);
         Boolean codeForBindEmail = userService.getCodeForBindEmail(request);
         System.out.println(codeForBindEmail);
+    }
+
+    @Test
+    void verifyCodeForBindEmailTest() {
+        VerifyCodeForBindEmailRequest request = new VerifyCodeForBindEmailRequest();
+        request.setCode("291087");
+        request.setEmail("1355609295@qq.com");
+        request.setUserId(1L);
+        Boolean bindEmail = userService.verifyCodeForBindEmail(request);
+        System.out.println(bindEmail);
     }
 }
