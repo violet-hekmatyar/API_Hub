@@ -31,4 +31,8 @@ public interface UserService extends IService<User> {
     Boolean getCodeForBindEmail(GetCodeForBindEmailRequest getCodeForBindEmailRequest);
 
     Boolean verifyCodeForBindEmail(VerifyCodeForBindEmailRequest newVerifyCodeForBindEmailRequest);
+
+    UserLoginVO userEmailLogin(String email, String password);
+
+    void logout(Long currentUserId);
 }

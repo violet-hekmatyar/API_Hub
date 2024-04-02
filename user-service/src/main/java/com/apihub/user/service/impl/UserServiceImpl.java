@@ -153,6 +153,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userPassword", encryptPassword);
         User user = userMapper.selectOne(queryWrapper);
 
+        return loginCommonMethod(user);
+    }
+
+    private UserLoginVO loginCommonMethod(User user) {
         // 用户不存在
         if (user == null) {
             log.info("用户不存在或密码错误");
@@ -434,6 +438,58 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (!b) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "绑定邮箱失败");
         }
+
+        //将邮箱信息更新到redis中
+        String redisKey = LOGIN_USER_KEY
+                + newVerifyCodeForBindEmailRequest.getUserId();
+        Map<String, Object> userMap = BeanUtil.beanToMap(user, new HashMap<>(),
+                CopyOptions.create()
+                        .setIgnoreNullValue(true)
+                        .setFieldValueEditor((fieldName, fieldValue) -> fieldValue != null ? fieldValue.toString() : ""));
+        stringRedisTemplate.opsForHash().putAll(redisKey, userMap);
+        //无需刷新时间
+
         return true;
     }
+
+    @Override
+    public UserLoginVO userEmailLogin(String email, String password) {
+        String userEncryptPassword = DigestUtils.md5DigestAsHex((MD5_SALT + password).getBytes());
+
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("mpOpenId", email);
+        queryWrapper.eq("userPassword", userEncryptPassword);
+        User user = userMapper.selectOne(queryWrapper);
+
+        return loginCommonMethod(user);
+    }
+
+    @Override
+    public void logout(Long currentUserId) {
+        User user;
+        String tokenKey = LOGIN_USER_KEY + currentUserId;
+
+        //获取用户信息
+        Map<Object, Object> userMap = null;
+        try {
+            userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
+            user = BeanUtil.fillBeanWithMap(userMap, new User(), false);
+        } catch (Exception e) {
+            //throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未登录");
+            user = this.getById(currentUserId);
+        }
+        if (user == null) {
+            log.error("用户不存在，查询id为：" + currentUserId);
+            return;
+        }
+        //删除redis中的用户信息
+        stringRedisTemplate.delete(tokenKey);
+        stringRedisTemplate.delete(USER_BALANCE_KEY + currentUserId);
+        if (user.getAccessKey() != null) {
+            stringRedisTemplate.delete(API_ACCESS_KEY + user.getAccessKey());
+        }
+        //todo 还有个以token为key的hash表，需要删除
+        // 但是，token没有在服务端中存储，暂不处理
+    }
+
 }

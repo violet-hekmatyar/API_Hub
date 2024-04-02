@@ -78,4 +78,9 @@ public class UserServiceTest {
         Boolean bindEmail = userService.verifyCodeForBindEmail(request);
         System.out.println(bindEmail);
     }
+
+    @Test
+    void userEmailLoginTest() {
+        System.out.println(userService.userEmailLogin("1355609295@qq.com", "123456aa"));
+    }
 }

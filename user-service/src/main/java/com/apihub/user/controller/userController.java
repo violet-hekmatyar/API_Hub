@@ -6,6 +6,7 @@ import com.apihub.common.common.DeleteRequest;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.common.ResultUtils;
 import com.apihub.common.exception.BusinessException;
+import com.apihub.common.utils.UserHolder;
 import com.apihub.user.annotation.AuthCheck;
 import com.apihub.user.model.dto.*;
 import com.apihub.user.model.entity.User;
@@ -52,8 +53,8 @@ public class userController {
         return ResultUtils.success(result);
     }
 
-    @ApiOperation("用户登录")
-    @PostMapping("login")
+    @ApiOperation("用户名登录")
+    @PostMapping("/login")
     public BaseResponse<UserLoginVO> login(@RequestBody LoginFormDTO loginFormDTO) {
         if (loginFormDTO == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -242,10 +243,42 @@ public class userController {
     }
 
     /*
+     * 使用邮箱登录
+     * */
+    @ApiOperation("邮箱登录")
+    @PostMapping("/login/email")
+    public BaseResponse<UserLoginVO> userEmailLogin(@RequestBody UserEmailLoginRequest userEmailLoginRequest, HttpServletRequest request) {
+        if (userEmailLoginRequest == null || userEmailLoginRequest.getEmail() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String email = userEmailLoginRequest.getEmail();
+        String password = userEmailLoginRequest.getPassword();
+        if (StringUtils.isAnyBlank(email, password)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return ResultUtils.success(userService.userEmailLogin(email, password));
+    }
+
+    /*
+     * 退出登录
+     * */
+    @ApiOperation("用户退出登录")
+    @PostMapping("/logout")
+    public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
+        if (UserHolder.getUser() == null) {
+            log.error("用户未登录但请求退出登录");
+            return ResultUtils.success(true);
+        }
+        userService.logout(UserHolder.getUser());
+
+        return ResultUtils.success(true);
+    }
+
+    /*
      * 绑定邮箱发送验证码
      * */
     @ApiOperation("发送绑定邮箱验证码")
-    @PostMapping("/bind/email/code")
+    @PostMapping("/code/bind/email")
     public BaseResponse<Boolean> getCodeForBindEmail(@RequestBody GetCodeForBindEmailRequest getCodeForBindEmailRequest, HttpServletRequest request) {
         if (getCodeForBindEmailRequest == null || getCodeForBindEmailRequest.getEmail() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
