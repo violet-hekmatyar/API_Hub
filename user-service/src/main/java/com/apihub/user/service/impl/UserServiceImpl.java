@@ -188,7 +188,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                         .setIgnoreNullValue(true)
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue != null ? fieldValue.toString() : ""));
 
-        // todo 这里应该是，发请求的时候
         String key = LOGIN_USER_KEY + user.getId();
         //以userId为key存一份
         stringRedisTemplate.opsForHash().putAll(key, userMap);

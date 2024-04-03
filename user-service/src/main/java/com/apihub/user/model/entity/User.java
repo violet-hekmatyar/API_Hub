@@ -56,7 +56,7 @@ public class User implements Serializable {
      */
     private String secretKey;
     /**
-     * 微信开放平台id
+     * giteeId
      */
     private String unionId;
     /**
