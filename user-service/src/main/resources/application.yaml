@@ -46,7 +46,15 @@ spring:
             class: javax.net.ssl.SSLSocketFactory
           ssl:
             enable: true
-
+justauth:
+  enabled: true
+  type:
+    GITEE:
+      client-id: eebe4fe33b632101afc2033f93ddf09532405fe2e4a7fe0497b2c27c30af06c4
+      client-secret: f5f6050dcffd45c5022e04c03099bcc1ccb936384b7c02c67d59e51c34653a25
+      redirect-uri: http://127.0.0.1:8100/api/user/oauth/gitee/callback #项目中的回调地址
+  cache:
+    type: default
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
