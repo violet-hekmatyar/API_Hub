@@ -8,6 +8,7 @@ import com.apihub.user.model.vo.UserKeyPairVO;
 import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
+import me.zhyd.oauth.model.AuthResponse;
 
 /**
 * @author IKUN
@@ -35,4 +36,6 @@ public interface UserService extends IService<User> {
     UserLoginVO userEmailLogin(String email, String password);
 
     void logout(Long currentUserId);
+
+    UserLoginVO giteeLoginCallback(AuthResponse response);
 }

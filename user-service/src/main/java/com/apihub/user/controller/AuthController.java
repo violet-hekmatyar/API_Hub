@@ -5,20 +5,23 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
-import cn.hutool.json.JSONUtil;
+import com.apihub.common.common.BaseResponse;
 import com.apihub.common.common.ErrorCode;
+import com.apihub.common.common.ResultUtils;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
 import com.apihub.user.model.dto.aouth.BindGiteeRequest;
 import com.apihub.user.model.dto.aouth.GiteeTokenRequest;
 import com.apihub.user.model.dto.aouth.GiteeUserInfoResponse;
 import com.apihub.user.model.entity.User;
+import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.apihub.user.service.UserService;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.xkcoding.justauth.AuthRequestFactory;
 import lombok.extern.slf4j.Slf4j;
+import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.request.AuthRequest;
@@ -26,7 +29,10 @@ import me.zhyd.oauth.utils.AuthStateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -69,21 +75,22 @@ public class AuthController {
     }
 
     //gitee回调后，返回token和用户信息，并执行登录操作
-    @GetMapping("/{type}/callback")
-    public AuthResponse login(@PathVariable String type, AuthCallback callback) {
-        AuthRequest authRequest = factory.get(type);
+    @GetMapping("/gitee/callback")
+    public BaseResponse<UserLoginVO> login(AuthCallback callback) {
+        AuthRequest authRequest = factory.get("gitee");
         AuthResponse response = authRequest.login(callback);
-        Object data = response.getData();
-        log.info("【response】= {}", JSONUtil.toJsonStr(response));
-        //通过uuid查询用户,并进行登录操作
-        return response;
+        if (response.getCode() != AuthResponseStatus.SUCCESS.getCode()) {
+            log.error(response.getCode() + ":" + response.getMsg());
+            throw new BusinessException(response.getCode(), response.getMsg());
+        }
+        return ResultUtils.success(userService.giteeLoginCallback(response));
     }
 
     //已登录用户绑定gitee
     //通过输入gitee邮箱和密码
     //将token和refreshToken返回
     @GetMapping("/bind/gitee")
-    public UserVO bindGitee(@RequestBody BindGiteeRequest bindGiteeRequest) {
+    public BaseResponse<UserVO> bindGitee(@RequestBody BindGiteeRequest bindGiteeRequest) {
 
         Long userId = UserHolder.getUser();
         if (userId == null) {
@@ -161,7 +168,7 @@ public class AuthController {
         UserVO userVo;
         userVo = BeanUtil.copyProperties(user, UserVO.class);
 
-        return userVo;
+        return ResultUtils.success(userVo);
     }
 
     //通过refreshToken获得用户信息，并更新到用户信息中

@@ -3,7 +3,9 @@ package com.apihub.user.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.json.JSONUtil;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
@@ -23,8 +25,11 @@ import com.apihub.user.utils.MailUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.zhyd.oauth.model.AuthResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -40,8 +45,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static com.apihub.common.utils.RedisConstants.*;
-import static com.apihub.user.utils.UserConstant.BAN_ROLE;
-import static com.apihub.user.utils.UserConstant.MD5_SALT;
+import static com.apihub.user.utils.UserConstant.*;
 
 /**
  * @author IKUN
@@ -80,13 +84,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (!userPassword.equals(checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
         }
+        User user = userRegisterCommonMethod(userAccount, userPassword, null, null);
 
+        return user.getId();
 
+    }
+
+    private User userRegisterCommonMethod(String userAccount, String userPassword, String avatarUrl, String unionId) {
         // 使用分布式锁防止并发注册
         Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(REGISTER_LOCK_KEY + userAccount, "locked");
 
         // 如果加锁失败，说明正在注册中，直接返回，不走try里面的逻辑
-        if (!flag) {
+        if (Boolean.FALSE.equals(flag)) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "系统繁忙中，请稍后重试");
         }
         try {
@@ -109,6 +118,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             user.setUserPassword(encryptPassword);
             user.setAccessKey(accessKey);
             user.setSecretKey(secretKey);
+            if (StrUtil.isNotBlank(avatarUrl)) {
+                user.setUserAvatar(avatarUrl);
+            }
+            if (StrUtil.isNotBlank(unionId)) {
+                user.setUnionId(unionId);
+            }
+            user.setUserRole(DEFAULT_ROLE);
             boolean saveResult = this.save(user);
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
@@ -125,12 +141,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             userBalance.setFrozenAmount(0L);
             userBalancePaymentService.save(userBalance);
 
-            return user.getId();
+            return user;
         } finally {
             //释放锁
             stringRedisTemplate.delete(REGISTER_LOCK_KEY + userAccount);
         }
-
     }
 
     private final JwtTool jwtTool;
@@ -489,6 +504,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         //todo 还有个以token为key的hash表，需要删除
         // 但是，token没有在服务端中存储，暂不处理
+    }
+
+    @Override
+    public UserLoginVO giteeLoginCallback(AuthResponse response) {
+        log.info("【response】= {}", JSONUtil.toJsonStr(response));
+
+        Object data = response.getData();
+        String dataStr = JSONUtil.toJsonStr(data);
+        Gson gson = new Gson();
+        Map<String, Object> responseMapFromJson = gson.fromJson(dataStr, new TypeToken<Map<String, Object>>() {
+        }.getType());
+        //获取giteeId
+        String id = (String) responseMapFromJson.get("uuid");
+        if (StrUtil.isBlank(id)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "未查询到giteeId");
+        }
+
+        //通过unionId查询用户
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("unionId", id);
+        User user = userMapper.selectOne(queryWrapper);
+
+        //没有查询到用户，自动注册，并登录
+        //默认密码为666666aa
+        if (user == null) {
+            String name = (String) responseMapFromJson.get("username");
+            String avatarUrl = (String) responseMapFromJson.get("avatar");
+            user = userRegisterCommonMethod(name, "666666aa", avatarUrl, id);
+        }
+
+        //进行登录操作
+
+        return loginCommonMethod(user);
     }
 
 }
