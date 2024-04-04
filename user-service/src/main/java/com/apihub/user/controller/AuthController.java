@@ -171,10 +171,6 @@ public class AuthController {
         return ResultUtils.success(userVo);
     }
 
-    //通过refreshToken获得用户信息，并更新到用户信息中
-
-//    【response】= {"code":2000,"data":{"uuid":"11781876","username":"violet_hekmatyar","nickname":"hekmatyar_violet","avatar":"https://foruda.gitee.com/avatar/1690893589879244288/11781876_violet_hekmatyar_1690893589.png","blog":"http://blog.hekmatyar.cn","remark":"","gender":"UNKNOWN","source":"GITEE","token":{"accessToken":"3514e1eaed73eb9956d2339474079a41","expireIn":86400,"refreshToken":"73b9ae65a2904c5cdbab3e55b48cc9ae0ecb5f1a2a635daf053b61e2a0334c05","refreshTokenExpireIn":0,"scope":"user_info","tokenType":"bearer"},"rawUserInfo":{"gists_url":"https://gitee.com/api/v5/users/violet_hekmatyar/gists{/gist_id}","repos_url":"https://gitee.com/api/v5/users/violet_hekmatyar/repos","following_url":"https://gitee.com/api/v5/users/violet_hekmatyar/following_url{/other_user}","bio":"","created_at":"2022-10-17T11:56:54+08:00","remark":"","login":"violet_hekmatyar","type":"User","blog":"http://blog.hekmatyar.cn","subscriptions_url":"https://gitee.com/api/v5/users/violet_hekmatyar/subscriptions","updated_at":"2024-04-03T09:42:41+08:00","id":11781876,"public_repos":23,"organizations_url":"https://gitee.com/api/v5/users/violet_hekmatyar/orgs","starred_url":"https://gitee.com/api/v5/users/violet_hekmatyar/starred{/owner}{/repo}","followers_url":"https://gitee.com/api/v5/users/violet_hekmatyar/followers","public_gists":0,"url":"https://gitee.com/api/v5/users/violet_hekmatyar","received_events_url":"https://gitee.com/api/v5/users/violet_hekmatyar/received_events","watched":31,"followers":3,"avatar_url":"https://foruda.gitee.com/avatar/1690893589879244288/11781876_violet_hekmatyar_1690893589.png","events_url":"https://gitee.com/api/v5/users/violet_hekmatyar/events{/privacy}","html_url":"https://gitee.com/violet_hekmatyar","following":3,"name":"hekmatyar_violet","stared":13}}}
-
     /*@GetMapping("/login/{type}")
     public void login(@PathVariable String type, HttpServletResponse response) throws IOException {
         AuthRequest authRequest = factory.get(type);
