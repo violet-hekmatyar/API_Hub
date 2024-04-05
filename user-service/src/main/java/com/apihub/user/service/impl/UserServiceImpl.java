@@ -11,9 +11,7 @@ import com.apihub.common.exception.BusinessException;
 import com.apihub.common.utils.UserHolder;
 import com.apihub.user.config.JwtProperties;
 import com.apihub.user.mapper.UserMapper;
-import com.apihub.user.model.dto.GetCodeForBindEmailRequest;
-import com.apihub.user.model.dto.LoginFormDTO;
-import com.apihub.user.model.dto.VerifyCodeForBindEmailRequest;
+import com.apihub.user.model.dto.*;
 import com.apihub.user.model.entity.User;
 import com.apihub.user.model.entity.UserBalancePayment;
 import com.apihub.user.model.vo.UserKeyPairVO;
@@ -235,7 +233,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 用户余额的TTL设置成26h
         stringRedisTemplate.expire(blcKey, USER_BALANCE_TTL, TimeUnit.HOURS);
 
-        //以token为key存一份
+        //以token为key存一份，为了跨域
+        //如果跨域问题解决了，此处可以删除
         stringRedisTemplate.opsForValue().set(USER_TOKEN_KEY + token, user.getId().toString(), LOGIN_USER_TTL, TimeUnit.MINUTES);
 
         // 返回token+user信息
@@ -285,7 +284,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return userVo;
         }
         if (userMap.isEmpty()) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户数据为空");
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "未查询到登录信息，请重新登录");
         }
 
 //
@@ -467,6 +466,109 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
+    public Boolean sendEmailCodeForResetPassword(EmailCodeForResetPasswordRequest newEmailCodeForResetPasswordRequest) {
+        String email = newEmailCodeForResetPasswordRequest.getEmail();
+        Long userId = newEmailCodeForResetPasswordRequest.getUserId();
+
+        // 验证email与userId是否匹配
+        User user = this.getById(userId);
+        if (!user.getMpOpenId().equals(email)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "email与userId不匹配");
+        }
+
+        String redisKey = USER_RESET_PASSWORD_EMAILCODE_KEY + email;
+
+        sendEmailCode(email, redisKey, "通过邮箱验证码重置密码");
+
+        return true;
+    }
+
+    private void sendEmailCode(String email, String redisKey, String textSubject) {
+        if (!mailUtil.isValidEmail(email)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮件格式错误");
+        }
+
+        // 查询是否已经生成了验证码
+        String checkCode = stringRedisTemplate.opsForValue().get(redisKey);
+        if (checkCode != null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码生成频率太高，请稍后再试");
+        }
+
+        //产生六位数验证码
+        int code = new Random().nextInt(900000) + 100000;
+
+        log.info("发送验证码，邮箱地址" + email + "验证码为：" + code);
+        boolean b = mailUtil.sendMailMessage(
+                email, textSubject, "您正在" + textSubject + ",您的验证码为：" + code + "，请在5分钟内完成验证");
+
+        if (b) {
+            //发送成功，将验证码存入redis中，设置5分钟过期时间
+            //key为：USER_EMAIL_CODE_KEY+email+userid
+            stringRedisTemplate.opsForValue().set(
+                    redisKey, String.valueOf(code),
+                    5, TimeUnit.MINUTES);
+        } else {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "邮件发送失败");
+        }
+    }
+
+    @Override
+    public Boolean verifyEmailCodeForResetPassword(VerifyCodeForResetPasswordRequest verifyCodeForResetPasswordRequest) {
+        if (verifyCodeForResetPasswordRequest == null || StringUtils.isAnyBlank(
+                verifyCodeForResetPasswordRequest.getEmail(), verifyCodeForResetPasswordRequest.getVerifyCode(),
+                verifyCodeForResetPasswordRequest.getNewPassword())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+        String email = verifyCodeForResetPasswordRequest.getEmail();
+        String verifyCode = verifyCodeForResetPasswordRequest.getVerifyCode();
+        String newPassword = verifyCodeForResetPasswordRequest.getNewPassword();
+
+        //检查新密码是否符合规范
+        if (newPassword.length() < 8) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "新密码长度不能小于8位");
+        }
+
+        //检查userId与绑定邮箱是否一致
+        Long userId = verifyCodeForResetPasswordRequest.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
+        }
+
+        User user = this.getById(userId);
+        if (!user.getMpOpenId().equals(email)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "email与userId不匹配");
+        }
+
+        String redisKey = USER_RESET_PASSWORD_EMAILCODE_KEY + email;
+
+        //检查验证码
+        String code = stringRedisTemplate.opsForValue().get(redisKey);
+        if (code == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "验证码未发送或验证码已过期");
+        } else {
+            if (!code.equals(verifyCode)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码错误");
+            }
+        }
+
+        //验证码验证通过后，删除验证码
+        stringRedisTemplate.delete(redisKey);
+
+        //重置密码
+        String encryptPassword = DigestUtils.md5DigestAsHex((MD5_SALT + newPassword).getBytes());
+        user.setUserPassword(encryptPassword);
+        boolean saveResult = this.updateById(user);
+        if (!saveResult) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "重置密码失败，数据库错误");
+        }
+
+        //用户退出登录,让用户重新登录
+        logout(userId);
+
+        return true;
+    }
+
+    @Override
     public UserLoginVO userEmailLogin(String email, String password) {
         String userEncryptPassword = DigestUtils.md5DigestAsHex((MD5_SALT + password).getBytes());
 
@@ -531,7 +633,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (user == null) {
             String name = (String) responseMapFromJson.get("username");
             String avatarUrl = (String) responseMapFromJson.get("avatar");
-            user = userRegisterCommonMethod(name, "666666aa", avatarUrl, id);
+            user = userRegisterCommonMethod(name, DEFAULT_PASSWORD, avatarUrl, id);
         }
 
         //进行登录操作

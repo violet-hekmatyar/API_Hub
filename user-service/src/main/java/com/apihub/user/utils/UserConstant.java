@@ -31,5 +31,7 @@ public interface UserConstant {
 
     String MD5_SALT = "hekmatyar";
 
+    String DEFAULT_PASSWORD = "666666aa";
+
     // endregion
 }

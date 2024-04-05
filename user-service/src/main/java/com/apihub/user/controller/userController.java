@@ -279,7 +279,8 @@ public class userController {
      * */
     @ApiOperation("发送绑定邮箱验证码")
     @PostMapping("/code/bind/email")
-    public BaseResponse<Boolean> getCodeForBindEmail(@RequestBody GetCodeForBindEmailRequest getCodeForBindEmailRequest, HttpServletRequest request) {
+    public BaseResponse<Boolean> getCodeForBindEmail(
+            @RequestBody GetCodeForBindEmailRequest getCodeForBindEmailRequest, HttpServletRequest request) {
         if (getCodeForBindEmailRequest == null || getCodeForBindEmailRequest.getEmail() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -300,8 +301,8 @@ public class userController {
      * */
     @ApiOperation("验证绑定邮箱验证码")
     @PostMapping("/code/bind/email/verify")
-    public BaseResponse<Boolean> verifyCodeForBindEmail
-    (@RequestBody VerifyCodeForBindEmailRequest verifyCodeForBindEmailRequest, HttpServletRequest request) {
+    public BaseResponse<Boolean> verifyCodeForBindEmail(
+            @RequestBody VerifyCodeForBindEmailRequest verifyCodeForBindEmailRequest, HttpServletRequest request) {
         if (verifyCodeForBindEmailRequest == null || verifyCodeForBindEmailRequest.getCode() == null
                 || verifyCodeForBindEmailRequest.getEmail() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -317,6 +318,40 @@ public class userController {
 
         return ResultUtils.success(userService.verifyCodeForBindEmail(newVerifyCodeForBindEmailRequest));
     }
+
+    //发送邮箱验证码以重置密码(登录状态下操作)
+    @ApiOperation("重置密码(发送邮箱验证码)")
+    @PostMapping("/code/reset/password")
+    public BaseResponse<Boolean> sendEmailCodeForResetPassword(
+            @RequestBody EmailCodeForResetPasswordRequest emailCodeForResetPasswordRequest, HttpServletRequest request) {
+        if (emailCodeForResetPasswordRequest == null || emailCodeForResetPasswordRequest.getEmail() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long userId = UserHolder.getUser();
+        EmailCodeForResetPasswordRequest newEmailCodeForResetPasswordRequest = new EmailCodeForResetPasswordRequest();
+        newEmailCodeForResetPasswordRequest.setEmail(emailCodeForResetPasswordRequest.getEmail());
+        newEmailCodeForResetPasswordRequest.setUserId(userId);
+        return ResultUtils.success(userService.sendEmailCodeForResetPassword(newEmailCodeForResetPasswordRequest));
+    }
+
+    @ApiOperation("重置密码(验证邮箱验证码)")
+    @PostMapping("/code/verify/reset/password")
+    public BaseResponse<Boolean> verifyEmailCodeForResetPassword(
+            @RequestBody VerifyCodeForResetPasswordRequest verifyCodeForResetPasswordRequest, HttpServletRequest request) {
+        if (verifyCodeForResetPasswordRequest == null || verifyCodeForResetPasswordRequest.getEmail() == null
+                || verifyCodeForResetPasswordRequest.getVerifyCode() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        Long userId = UserHolder.getUser();
+        VerifyCodeForResetPasswordRequest newVerifyCodeForResetPasswordRequest = new VerifyCodeForResetPasswordRequest();
+        newVerifyCodeForResetPasswordRequest.setEmail(verifyCodeForResetPasswordRequest.getEmail());
+        newVerifyCodeForResetPasswordRequest.setVerifyCode(verifyCodeForResetPasswordRequest.getVerifyCode());
+        newVerifyCodeForResetPasswordRequest.setUserId(userId);
+        newVerifyCodeForResetPasswordRequest.setNewPassword(verifyCodeForResetPasswordRequest.getNewPassword());
+        return ResultUtils.success(userService.verifyEmailCodeForResetPassword(newVerifyCodeForResetPasswordRequest));
+    }
+
 
     //todo 七牛云头像 查询url并记录
     //todo 七牛云头像 删除

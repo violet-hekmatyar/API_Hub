@@ -1,8 +1,6 @@
 package com.apihub.user.service;
 
-import com.apihub.user.model.dto.GetCodeForBindEmailRequest;
-import com.apihub.user.model.dto.LoginFormDTO;
-import com.apihub.user.model.dto.VerifyCodeForBindEmailRequest;
+import com.apihub.user.model.dto.*;
 import com.apihub.user.model.entity.User;
 import com.apihub.user.model.vo.UserKeyPairVO;
 import com.apihub.user.model.vo.UserLoginVO;
@@ -38,4 +36,8 @@ public interface UserService extends IService<User> {
     void logout(Long currentUserId);
 
     UserLoginVO giteeLoginCallback(AuthResponse response);
+
+    Boolean sendEmailCodeForResetPassword(EmailCodeForResetPasswordRequest newEmailCodeForResetPasswordRequest);
+
+    Boolean verifyEmailCodeForResetPassword(VerifyCodeForResetPasswordRequest newVerifyCodeForResetPasswordRequest);
 }
