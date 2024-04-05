@@ -317,4 +317,7 @@ public class userController {
 
         return ResultUtils.success(userService.verifyCodeForBindEmail(newVerifyCodeForBindEmailRequest));
     }
+
+    //todo 七牛云头像 查询url并记录
+    //todo 七牛云头像 删除
 }
