@@ -298,6 +298,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return BeanUtil.fillBeanWithMap(userMap, new UserVO(), false);
     }
 
+
+    @Override
+    public Boolean updatePassword(Long userId, UserUpdatePasswordRequest userUpdatePasswordRequest) {
+        if (userUpdatePasswordRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String oldPassword = userUpdatePasswordRequest.getOldPassword();
+        String newPassword = userUpdatePasswordRequest.getNewPassword();
+        // 查询用户是否存在
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        String encryptOldPassword = user.getUserPassword();
+        String encryptOldPassword2 = DigestUtils.md5DigestAsHex((MD5_SALT + oldPassword).getBytes());
+
+        if (!encryptOldPassword.equals(encryptOldPassword2)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "原密码错误");
+        }
+        String encryptNewPassword = DigestUtils.md5DigestAsHex((MD5_SALT + newPassword).getBytes());
+        user.setUserPassword(encryptNewPassword);
+
+        return this.updateById(user);
+    }
+
     @Override
     public Boolean checkUserAK(String accessKey, String sign) {
         //获取用户，并检查是否封禁
@@ -604,8 +629,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (user.getAccessKey() != null) {
             stringRedisTemplate.delete(API_ACCESS_KEY + user.getAccessKey());
         }
-        //todo 还有个以token为key的hash表，需要删除
-        // 但是，token没有在服务端中存储，暂不处理
+        //还有个以token为key的hash表
+        //以token为key的hash表，是为了跨域而存在的，现在无需处理
     }
 
     @Override

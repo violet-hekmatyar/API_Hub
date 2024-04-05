@@ -217,6 +217,18 @@ public class userController {
         return ResultUtils.success(result);
     }
 
+    @ApiOperation("用户更改密码")
+    @PostMapping("/updatePassword")
+    public BaseResponse<Boolean> updatePassword(@RequestBody UserUpdatePasswordRequest userUpdatePasswordRequest,
+                                                HttpServletRequest request) {
+        if (userUpdatePasswordRequest == null || StringUtils.isAnyBlank(userUpdatePasswordRequest.getOldPassword(),
+                userUpdatePasswordRequest.getNewPassword())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long userId = UserHolder.getUser();
+        return ResultUtils.success(userService.updatePassword(userId, userUpdatePasswordRequest));
+    }
+
     /**
      * 删除用户
      */

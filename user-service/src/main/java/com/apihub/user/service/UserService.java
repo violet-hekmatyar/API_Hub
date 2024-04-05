@@ -40,4 +40,6 @@ public interface UserService extends IService<User> {
     Boolean sendEmailCodeForResetPassword(EmailCodeForResetPasswordRequest newEmailCodeForResetPasswordRequest);
 
     Boolean verifyEmailCodeForResetPassword(VerifyCodeForResetPasswordRequest newVerifyCodeForResetPasswordRequest);
+
+    Boolean updatePassword(Long userId, UserUpdatePasswordRequest userUpdatePasswordRequest);
 }
