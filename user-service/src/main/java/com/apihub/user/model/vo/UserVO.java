@@ -45,4 +45,13 @@ public class UserVO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+
+    /**
+     * giteeId
+     */
+    private String unionId;
+    /**
+     * 邮箱(公众号openId)
+     */
+    private String mpOpenId;
 }

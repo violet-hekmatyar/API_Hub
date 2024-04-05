@@ -6,6 +6,7 @@ import com.apihub.common.common.DeleteRequest;
 import com.apihub.common.common.ErrorCode;
 import com.apihub.common.common.ResultUtils;
 import com.apihub.common.exception.BusinessException;
+import com.apihub.common.utils.UserHolder;
 import com.apihub.user.annotation.AuthCheck;
 import com.apihub.user.model.dto.*;
 import com.apihub.user.model.entity.User;
@@ -52,8 +53,8 @@ public class userController {
         return ResultUtils.success(result);
     }
 
-    @ApiOperation("用户登录")
-    @PostMapping("login")
+    @ApiOperation("用户名登录")
+    @PostMapping("/login")
     public BaseResponse<UserLoginVO> login(@RequestBody LoginFormDTO loginFormDTO) {
         if (loginFormDTO == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -63,14 +64,13 @@ public class userController {
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        UserLoginVO userLoginVo =  userService.login(loginFormDTO);
+        UserLoginVO userLoginVo = userService.login(loginFormDTO);
         return ResultUtils.success(userLoginVo);
     }
 
     @ApiOperation("更换ak/sk")
     @PostMapping("/changeKeyPair")
-    public BaseResponse<UserKeyPairVO> changeKeyPair(@RequestBody LoginFormDTO loginFormDTO)
-    {
+    public BaseResponse<UserKeyPairVO> changeKeyPair(@RequestBody LoginFormDTO loginFormDTO) {
         if (loginFormDTO == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -87,8 +87,7 @@ public class userController {
 
     @ApiOperation("查询ak/sk")
     @GetMapping("/getPair")
-    public BaseResponse<UserKeyPairVO> getKeyPair()
-    {
+    public BaseResponse<UserKeyPairVO> getKeyPair() {
         UserKeyPairVO keyPairVO = userService.getKeyPair();
 
         return ResultUtils.success(keyPairVO);
@@ -105,6 +104,7 @@ public class userController {
         }
         return ResultUtils.success(user);
     }
+
     @ApiOperation("添加用户")
     @PostMapping("/add")
     @AuthCheck(mustRole = ADMIN_ROLE)
@@ -201,7 +201,7 @@ public class userController {
     @ApiOperation("更新用户（自己）")
     @PostMapping("/updateSelf")
     public BaseResponse<Boolean> updateUserVo(@RequestBody UserUpdateVoRequest UserUpdateVoRequest,
-                                            HttpServletRequest request) {
+                                              HttpServletRequest request) {
 
         if (UserUpdateVoRequest == null || UserUpdateVoRequest.getId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -217,10 +217,20 @@ public class userController {
         return ResultUtils.success(result);
     }
 
+    @ApiOperation("用户更改密码")
+    @PostMapping("/updatePassword")
+    public BaseResponse<Boolean> updatePassword(@RequestBody UserUpdatePasswordRequest userUpdatePasswordRequest,
+                                                HttpServletRequest request) {
+        if (userUpdatePasswordRequest == null || StringUtils.isAnyBlank(userUpdatePasswordRequest.getOldPassword(),
+                userUpdatePasswordRequest.getNewPassword())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long userId = UserHolder.getUser();
+        return ResultUtils.success(userService.updatePassword(userId, userUpdatePasswordRequest));
+    }
+
     /**
      * 删除用户
-     *
-     *
      */
     @ApiOperation("删除用户")
     @PostMapping("/delete")
@@ -243,4 +253,118 @@ public class userController {
             return new BaseResponse<>(OPERATION_ERROR);
         }
     }
+
+    /*
+     * 使用邮箱登录
+     * */
+    @ApiOperation("邮箱登录")
+    @PostMapping("/login/email")
+    public BaseResponse<UserLoginVO> userEmailLogin(@RequestBody UserEmailLoginRequest userEmailLoginRequest, HttpServletRequest request) {
+        if (userEmailLoginRequest == null || userEmailLoginRequest.getEmail() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String email = userEmailLoginRequest.getEmail();
+        String password = userEmailLoginRequest.getPassword();
+        if (StringUtils.isAnyBlank(email, password)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return ResultUtils.success(userService.userEmailLogin(email, password));
+    }
+
+    /*
+     * 退出登录
+     * */
+    @ApiOperation("用户退出登录")
+    @PostMapping("/logout")
+    public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
+        if (UserHolder.getUser() == null) {
+            log.error("用户未登录但请求退出登录");
+            return ResultUtils.success(true);
+        }
+        userService.logout(UserHolder.getUser());
+
+        return ResultUtils.success(true);
+    }
+
+    /*
+     * 绑定邮箱发送验证码
+     * */
+    @ApiOperation("发送绑定邮箱验证码")
+    @PostMapping("/code/bind/email")
+    public BaseResponse<Boolean> getCodeForBindEmail(
+            @RequestBody GetCodeForBindEmailRequest getCodeForBindEmailRequest, HttpServletRequest request) {
+        if (getCodeForBindEmailRequest == null || getCodeForBindEmailRequest.getEmail() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        UserVO currentUser = userService.getLoginUser();
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        //将userId装入请求中
+        GetCodeForBindEmailRequest newGetCodeForBindEmailRequest = new GetCodeForBindEmailRequest();
+        newGetCodeForBindEmailRequest.setEmail(getCodeForBindEmailRequest.getEmail());
+        newGetCodeForBindEmailRequest.setUserId(currentUser.getId());
+
+        return ResultUtils.success(userService.getCodeForBindEmail(getCodeForBindEmailRequest));
+    }
+
+    /*
+     * 验证绑定邮箱验证码
+     * */
+    @ApiOperation("验证绑定邮箱验证码")
+    @PostMapping("/code/bind/email/verify")
+    public BaseResponse<Boolean> verifyCodeForBindEmail(
+            @RequestBody VerifyCodeForBindEmailRequest verifyCodeForBindEmailRequest, HttpServletRequest request) {
+        if (verifyCodeForBindEmailRequest == null || verifyCodeForBindEmailRequest.getCode() == null
+                || verifyCodeForBindEmailRequest.getEmail() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        UserVO currentUser = userService.getLoginUser();
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        VerifyCodeForBindEmailRequest newVerifyCodeForBindEmailRequest = new VerifyCodeForBindEmailRequest();
+        newVerifyCodeForBindEmailRequest.setCode(verifyCodeForBindEmailRequest.getCode());
+        newVerifyCodeForBindEmailRequest.setEmail(verifyCodeForBindEmailRequest.getEmail());
+        newVerifyCodeForBindEmailRequest.setUserId(currentUser.getId());
+
+        return ResultUtils.success(userService.verifyCodeForBindEmail(newVerifyCodeForBindEmailRequest));
+    }
+
+    //发送邮箱验证码以重置密码(登录状态下操作)
+    @ApiOperation("重置密码(发送邮箱验证码)")
+    @PostMapping("/code/reset/password")
+    public BaseResponse<Boolean> sendEmailCodeForResetPassword(
+            @RequestBody EmailCodeForResetPasswordRequest emailCodeForResetPasswordRequest, HttpServletRequest request) {
+        if (emailCodeForResetPasswordRequest == null || emailCodeForResetPasswordRequest.getEmail() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long userId = UserHolder.getUser();
+        EmailCodeForResetPasswordRequest newEmailCodeForResetPasswordRequest = new EmailCodeForResetPasswordRequest();
+        newEmailCodeForResetPasswordRequest.setEmail(emailCodeForResetPasswordRequest.getEmail());
+        newEmailCodeForResetPasswordRequest.setUserId(userId);
+        return ResultUtils.success(userService.sendEmailCodeForResetPassword(newEmailCodeForResetPasswordRequest));
+    }
+
+    @ApiOperation("重置密码(验证邮箱验证码)")
+    @PostMapping("/code/verify/reset/password")
+    public BaseResponse<Boolean> verifyEmailCodeForResetPassword(
+            @RequestBody VerifyCodeForResetPasswordRequest verifyCodeForResetPasswordRequest, HttpServletRequest request) {
+        if (verifyCodeForResetPasswordRequest == null || verifyCodeForResetPasswordRequest.getEmail() == null
+                || verifyCodeForResetPasswordRequest.getVerifyCode() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        Long userId = UserHolder.getUser();
+        VerifyCodeForResetPasswordRequest newVerifyCodeForResetPasswordRequest = new VerifyCodeForResetPasswordRequest();
+        newVerifyCodeForResetPasswordRequest.setEmail(verifyCodeForResetPasswordRequest.getEmail());
+        newVerifyCodeForResetPasswordRequest.setVerifyCode(verifyCodeForResetPasswordRequest.getVerifyCode());
+        newVerifyCodeForResetPasswordRequest.setUserId(userId);
+        newVerifyCodeForResetPasswordRequest.setNewPassword(verifyCodeForResetPasswordRequest.getNewPassword());
+        return ResultUtils.success(userService.verifyEmailCodeForResetPassword(newVerifyCodeForResetPasswordRequest));
+    }
+
+
+    //todo 七牛云头像 查询url并记录
+    //todo 七牛云头像 删除
 }

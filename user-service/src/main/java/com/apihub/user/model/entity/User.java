@@ -56,11 +56,11 @@ public class User implements Serializable {
      */
     private String secretKey;
     /**
-     * 微信开放平台id
+     * giteeId
      */
     private String unionId;
     /**
-     * 公众号openId
+     * 邮箱(公众号openId)
      */
     private String mpOpenId;
     /**

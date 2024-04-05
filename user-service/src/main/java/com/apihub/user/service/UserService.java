@@ -1,11 +1,12 @@
 package com.apihub.user.service;
 
-import com.apihub.user.model.dto.LoginFormDTO;
+import com.apihub.user.model.dto.*;
 import com.apihub.user.model.entity.User;
 import com.apihub.user.model.vo.UserKeyPairVO;
 import com.apihub.user.model.vo.UserLoginVO;
 import com.apihub.user.model.vo.UserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
+import me.zhyd.oauth.model.AuthResponse;
 
 /**
 * @author IKUN
@@ -26,4 +27,19 @@ public interface UserService extends IService<User> {
 
     UserKeyPairVO getKeyPair();
 
+    Boolean getCodeForBindEmail(GetCodeForBindEmailRequest getCodeForBindEmailRequest);
+
+    Boolean verifyCodeForBindEmail(VerifyCodeForBindEmailRequest newVerifyCodeForBindEmailRequest);
+
+    UserLoginVO userEmailLogin(String email, String password);
+
+    void logout(Long currentUserId);
+
+    UserLoginVO giteeLoginCallback(AuthResponse response);
+
+    Boolean sendEmailCodeForResetPassword(EmailCodeForResetPasswordRequest newEmailCodeForResetPasswordRequest);
+
+    Boolean verifyEmailCodeForResetPassword(VerifyCodeForResetPasswordRequest newVerifyCodeForResetPasswordRequest);
+
+    Boolean updatePassword(Long userId, UserUpdatePasswordRequest userUpdatePasswordRequest);
 }

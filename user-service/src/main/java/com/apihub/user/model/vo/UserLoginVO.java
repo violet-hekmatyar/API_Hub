@@ -42,7 +42,16 @@ public class UserLoginVO implements Serializable {
     private Date updateTime;
 
     /**
-    * 用户token
-    * */
+     * 用户token
+     */
     private String token;
+
+    /**
+     * giteeId
+     */
+    private String unionId;
+    /**
+     * 邮箱(公众号openId)
+     */
+    private String mpOpenId;
 }
