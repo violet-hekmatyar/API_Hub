@@ -54,9 +54,11 @@ apihub:
     # 无需token验证的路径
     excludePaths:
       - /api/user/login
+      - /api/user/login/email
+      - /api/user/oauth/login/gitee
+      - /api/user/oauth/gitee/callback
       - /api/apiService/**
-      - /api/user/register
     # 需要AK验证的路径
     includePaths:
       - /api/apiService/**
-#      - /api/user/get/login
+  #      - /api/user/get/login
