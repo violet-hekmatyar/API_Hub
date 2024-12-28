@@ -10,8 +10,8 @@ import com.google.gson.Gson;
 
 public class ApiHubSelfApiClient {
 
-    private static final String SELF_API_HOST = "http://8.130.139.252:8201/api";
-
+//    private static final String SELF_API_HOST = "http://8.130.139.252:8201/api";
+private static final String SELF_API_HOST = "http://127.0.0.1:8201/api";
     private final String token;
 
     public ApiHubSelfApiClient(String token) {

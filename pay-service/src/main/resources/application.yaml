@@ -10,20 +10,25 @@ spring:
   cloud:
     nacos:
       server-addr: 127.0.0.1:8848
-#      server-addr: 8.130.35.69:8848 # nacos地址
-#      username: nacos
-#      password: Jimmy@2333
+  #      server-addr: 8.130.35.69:8848 # nacos地址
+  #      username: nacos
+  #      password: Jimmy@2333
+  #  datasource:
+  #    url: jdbc:mysql://8.130.35.69:3306/apihub
+  #    driver-class-name: com.mysql.cj.jdbc.Driver
+  #    username: root
+  #    password: Jimmy@2333
   datasource:
-    url: jdbc:mysql://8.130.35.69:3306/apihub
+    url: jdbc:mysql://127.0.0.1:3306/apihub
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password: Jimmy@2333
+    password: 123456
   rabbitmq:
-    host: 8.130.35.69
+    host: 192.168.230.128
     port: 5672
     virtual-host: /apiHub
-    username: hekmatyar
-    password: Jimmy@2333
+    username: itcast
+    password: 123321
     connection-timeout: 500ms
     template:
       retry:
