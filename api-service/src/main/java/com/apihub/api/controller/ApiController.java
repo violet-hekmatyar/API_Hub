@@ -25,11 +25,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
-import static com.apihub.common.utils.RedisConstants.*;
+import static com.apihub.common.utils.RedisConstants.API_INVOKE_KEY;
 
 @RestController
 @RequestMapping("/apiService")
@@ -133,4 +131,6 @@ public class ApiController {
             log.error("MQ队列出错，订单发送失败：", e);
         }
     }
+
+
 }

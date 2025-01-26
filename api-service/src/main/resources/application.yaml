@@ -12,14 +12,14 @@ spring:
       server-addr: 127.0.0.1:8848
     sentinel:
       transport:
-        dashboard: localhost:8090
+        dashboard: localhost:8091
       http-method-specify: true
 #      server-addr: 8.130.35.69:8848 # nacos地址
 #      username: nacos
 #      password: Jimmy@2333
   redis:
     database: 6
-    host: 8.130.35.69
+    host: 127.0.0.1
     port: 6379
     timeout: 5000
     lettuce:
@@ -28,13 +28,13 @@ spring:
         max-idle: 10
         min-idle: 1
         time-between-eviction-runs: 10s
-    password: Jimmy@2333
+  #    password: Jimmy@2333
   rabbitmq:
-    host: 8.130.35.69
+    host: 192.168.230.128
     port: 5672
     virtual-host: /apiHub
-    username: hekmatyar
-    password: Jimmy@2333
+    username: itcast
+    password: 123321
     connection-timeout: 500ms
     template:
       retry:
