@@ -132,7 +132,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             UserBalancePayment userBalance = new UserBalancePayment();
             userBalance.setId(user.getId());
             userBalance.setUserId(user.getId());
-            userBalance.setBalance(0L);
+            userBalance.setBalance(25L);
             userBalance.setScore(0L);
             userBalance.setExpenseAmount(0L);
             userBalance.setExpenseScore(0L);

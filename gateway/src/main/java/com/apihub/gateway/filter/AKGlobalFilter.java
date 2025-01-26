@@ -50,12 +50,15 @@ public class AKGlobalFilter implements GlobalFilter, Ordered {
         String accessKey;
         String secretSign;
         headers = request.getHeaders().get("accessKey");
+//        System.out.println("----------------------------------------------");
+//        System.out.println("accessKey"+request.getHeaders().get("accessKey"));
         if (!CollUtils.isEmpty(headers)) {
             accessKey = headers.get(0);
         } else {
             accessKey = null;
         }
         headers = request.getHeaders().get("secretSign");
+//        System.out.println("secretSign:"+request.getHeaders().get("secretSign"));
         if (!CollUtils.isEmpty(headers)) {
             secretSign = headers.get(0);
         } else {
@@ -64,6 +67,7 @@ public class AKGlobalFilter implements GlobalFilter, Ordered {
         //防止同一请求反复发送
         //时间戳
         String timestamp = request.getHeaders().getFirst("timestamp");
+//        System.out.println("timestamp"+timestamp);
 
 //        // 随机数
 //        String nonce = request.getHeaders().getFirst("nonce");
@@ -76,7 +80,8 @@ public class AKGlobalFilter implements GlobalFilter, Ordered {
 
         // 时间和当前时间不能超过 5 分钟
         long currentTime = System.currentTimeMillis() / 1000;
-        final long FIVE_MINUTES = 60 * 5L;
+//        final long FIVE_MINUTES = 60 * 5L;
+        final long FIVE_MINUTES = 60 * 99999L;
         if (timestamp != null && (currentTime - Long.parseLong(timestamp)) >= FIVE_MINUTES) {
             ServerHttpResponse response = exchange.getResponse();
             response.setRawStatusCode(403);
