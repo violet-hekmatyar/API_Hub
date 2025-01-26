@@ -80,60 +80,30 @@ api-SD</font>K<font style="color:rgb(31, 35, 40);">， 通过</font>开发者凭
 
 # 项目亮点
 
-<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">● </font>*
-*<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">模块化设计</font>
-**<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-：项目后端采用模块化设计，划分为公共模块、客户端SDK、Gateway网关、用户中心、接口中心、记录中心、优惠券中心等7个子项目，通过Maven进行多模块依赖管理和打包，提高了项目的可维护性和可扩展性。</font>
+● **模块化设计**：项目后端采用模块化设计，划分为公共模块、客户端SDK、Gateway网关、用户中心、接口中心、记录中心、优惠券中心等7个子项目，通过Maven进行多模块依赖管理和打包，提高了项目的可维护性和可扩展性。
 
-<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-●</font><font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);"> </font>*
-*<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">服务注册与发现</font>
-**<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-：基于Nacos实现服务注册与发现及业务动态配置切换，使得服务能够灵活应对变化，提高了系统的稳定性和灵活性。</font>
 
-<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">● </font>*
-*<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">客户端SDK简化开发</font>
-**<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">：为解决开发者调用成本过高的问题，平台基于SpringBoot
-Starter开发了客户端SDK，只需少量代码即可调用接口，并统一异常返回类，极大地提升了开发体验和效率。</font>
+● **服务注册与发现**：基于Nacos实现服务注册与发现及业务动态配置切换，使得服务能够灵活应对变化，提高了系统的稳定性和灵活性。
 
-<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-●</font><font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);"> </font>*
-*<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">API网关增强安全性</font>
-**<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">：选用Spring Cloud
-Gateway作为API网关，实现了路由转发、访问控制、流量染色等功能，并集中处理签名校验、请求参数校验等业务逻辑，既提高了安全性，又便于系统开发维护。</font>
+● **客户端SDK简化开发**：为解决开发者调用成本过高的问题，平台基于SpringBoot Starter开发了客户端SDK，只需少量代码即可调用接口，并统一异常返回类，极大地提升了开发体验和效率。
 
-<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-●</font><font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);"> </font>*
-*<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">公共模块减少重复代码</font>
-**<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-：通过抽象模型层和业务层代码为公共模块，并使用OpenFeign实现子系统间的高性能接口调用，大幅减少了重复代码，提高了代码的可复用性和开发效率。</font>
 
-<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">● </font>*
-*<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">异步处理提升响应速度</font>
-**<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-：为减轻API调用模块的即时负载，提升服务响应速度，平台使用RabbitMQ记录用户调用信息，以异步方式处理队列信息并进行相应的数据库更新操作，保证了数据的一致性和完整性。</font>
+● **API网关增强安全性**：选用Spring Cloud Gateway作为API网关，实现了路由转发、访问控制、流量染色等功能，并集中处理签名校验、请求参数校验等业务逻辑，既提高了安全性，又便于系统开发维护。
 
-<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">● </font>*
-*<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">自主研发接口提升可用性</font>
-**<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-：自主开发了OJ沙箱接口、图片搜索接口等，累计调用次数众多，接口调用可用性高达99.99%，充分证明了平台的技术实力和接口的稳定性。</font>
 
-<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-●</font><font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);"> </font>*
-*<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">熔断降级与限流控制保障稳定性</font>
-**<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-：通过开启Feign的Sentinel功能，将Sentinel的熔断降级和限流控制应用于OpenFeign的远程调用中，有效保障了系统的稳定性。当接口异常调用的比例超出阈值时，会自动熔断该接口并降级处理，恢复正常后再放行请求，同时触发限流或熔断后的请求会返回默认数据或友好提示。</font>
+● **公共模块减少重复代码**：通过抽象模型层和业务层代码为公共模块，并使用OpenFeign实现子系统间的高性能接口调用，大幅减少了重复代码，提高了代码的可复用性和开发效率。
 
-<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-●</font><font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);"> </font>*
-*<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">全局过滤器简化校验流程</font>
-**<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-：自定义GlobalFilter，包括AKGlobalFilter和LoginGlobalFilter，对于需要拦截的路由进行统一的AccessKey和SecretKey校验或者LoginToken校验，简化了代码，实现了业务解耦。</font>
+● **异步处理提升响应速度**：为减轻API调用模块的即时负载，提升服务响应速度，平台使用RabbitMQ记录用户调用信息，以异步方式处理队列信息并进行相应的数据库更新操作，保证了数据的一致性和完整性。
 
-<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">● </font>*
-*<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">API文档自动生成与在线调用</font>
-**<font style="color:rgb(5, 7, 59);background-color:rgb(253, 253, 254);">
-：使用swagger和Knife4j等API管理产品实现了API文档自动生成和在线调用功能，方便开发者快速了解和测试接口，提高了开发效率。</font>
+● **自主研发接口提升可用性**：自主开发了OJ沙箱接口、图片搜索接口等，累计调用次数众多，接口调用可用性高达99.99%，充分证明了平台的技术实力和接口的稳定性。
+
+
+● **熔断降级与限流控制保障稳定性**：通过开启Feign的Sentinel功能，将Sentinel的熔断降级和限流控制应用于OpenFeign的远程调用中，有效保障了系统的稳定性。当接口异常调用的比例超出阈值时，会自动熔断该接口并降级处理，恢复正常后再放行请求，同时触发限流或熔断后的请求会返回默认数据或友好提示。
+
+
+● **全局过滤器简化校验流程**：自定义GlobalFilter，包括AKGlobalFilter和LoginGlobalFilter，对于需要拦截的路由进行统一的AccessKey和SecretKey校验或者LoginToken校验，简化了代码，实现了业务解耦。
+
+● **API文档自动生成与在线调用**：使用swagger和Knife4j等API管理产品实现了API文档自动生成和在线调用功能，方便开发者快速了解和测试接口，提高了开发效率。
 
 # <font style="color:rgb(31, 35, 40);">SDK使用</font>
 
